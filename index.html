@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scale Mat – Size Comparison Game</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ctext y='8.5' font-size='9'%3E📏%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f3b2e;--ink:#eaf3e4;--mute:rgba(234,243,228,.62);--or:#ff6a2b;--ye:#ffd23f;--cy:#7fd1ff;--gd:#3ddc84;--rd:#ff4d5a;--panel:rgba(6,26,20,.72);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.3 "Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;overflow:hidden}
+#mat{position:fixed;inset:0;width:100%;height:100%}
+main{position:relative;height:100%;display:flex;flex-direction:column;gap:8px;padding:10px 14px;max-width:1040px;margin:0 auto}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.logo{font:700 20px Fredoka,sans-serif;letter-spacing:.02em;margin-right:auto;display:flex;align-items:center;gap:8px}
+.logo i{width:22px;height:22px;border-radius:6px;background:var(--or);display:inline-block;box-shadow:inset -5px -5px 0 rgba(0,0,0,.18)}
+.pill{display:flex;align-items:baseline;gap:8px;padding:5px 14px;border-radius:999px;background:var(--panel);border:1px solid rgba(255,255,255,.14);font-size:13px;color:var(--mute)}
+.pill b{font:600 20px Fredoka,sans-serif;color:var(--ink)}
+.pill.bump b{animation:pop .5s}
+.snd{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:var(--panel);color:var(--ink);font-size:16px;cursor:pointer}
+.prog{display:flex;gap:6px}.prog div{flex:1;height:7px;border-radius:9px;background:rgba(255,255,255,.12);transition:background .3s}
+.prog .on{background:rgba(255,255,255,.45)}.prog .g{background:var(--gd)}.prog .y{background:var(--ye)}.prog .r{background:var(--rd)}
+.wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.stage{position:relative;width:min(100cqw,150cqh);aspect-ratio:3/2;border-radius:20px;border:2px solid rgba(234,243,228,.35);background:var(--panel);backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2);box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 0 0 6px rgba(255,255,255,.03);overflow:hidden}
+.stage.shake{animation:shake .55s}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.zoom{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px}
+.zoom button{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.4);color:var(--ink);font:600 22px/1 Fredoka,sans-serif;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ye);outline-offset:2px}
+.flash{position:absolute;inset:0;pointer-events:none;opacity:0}
+.flash.g{animation:fl .9s;background:radial-gradient(circle,rgba(255,210,63,.4),rgba(61,220,132,.15) 60%,transparent)}
+.flash.r{animation:fl .8s;background:radial-gradient(circle,transparent 30%,rgba(255,77,90,.5))}
+.res{position:absolute;left:50%;top:14px;transform:translateX(-50%);text-align:center;pointer-events:none;width:max-content;max-width:calc(100% - 130px)}
+.res[hidden],.ov[hidden]{display:none}
+.res .w{font:700 clamp(28px,6cqw,52px)/1 Fredoka,sans-serif;animation:pop .6s cubic-bezier(.2,1.6,.4,1);text-shadow:0 3px 0 rgba(0,0,0,.35),0 0 24px currentColor}
+.res.g .w{color:var(--gd)}.res.y .w{color:var(--ye)}.res.r .w{color:var(--rd)}
+.res .s{font:600 22px Fredoka,sans-serif;margin-top:4px}
+.res .k{font-size:14px;color:var(--mute)}.res .k i{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 5px 0 12px}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,18,14,.62);backdrop-filter:blur(4px);padding:12px}
+.card{width:min(400px,100%);max-height:100%;overflow:auto;padding:22px;border-radius:20px;background:#0b2b21;border:2px solid rgba(234,243,228,.3);text-align:center;animation:pop .5s}
+.card h2{margin:0;font:700 34px Fredoka,sans-serif}.card .st{font-size:38px;color:var(--ye);letter-spacing:6px;text-shadow:0 0 18px rgba(255,210,63,.6)}
+.card p{margin:6px 0 14px;color:var(--mute)}
+.card ul{list-style:none;margin:0 0 16px;padding:0;text-align:left}
+.card li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.12)}
+.btn{border:0;border-radius:14px;background:var(--or);color:#1a0a02;font:700 20px Fredoka,sans-serif;padding:13px 28px;cursor:pointer;box-shadow:0 5px 0 #b8400f,0 10px 24px rgba(255,106,43,.35);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #b8400f}.btn:disabled{opacity:.4;pointer-events:none}
+footer{display:flex;align-items:stretch;gap:10px}
+.cards{flex:1;display:flex;gap:10px;min-width:0}
+.oc{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;background:var(--panel);border:1px solid rgba(255,255,255,.14)}
+.oc i{flex:none;width:14px;height:14px;border-radius:50%}
+.oc b{display:block;font:600 16px Fredoka,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oc small{color:var(--mute);font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oc.r i{background:var(--cy)}.oc.t i{background:var(--or)}
+#lock{flex:none;min-width:150px}
+@media(max-width:640px){footer,.cards{flex-direction:column}.oc small{white-space:normal}.logo{font-size:17px}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:none}15%{transform:translateX(-12px) rotate(-.6deg)}35%{transform:translateX(10px) rotate(.5deg)}55%{transform:translateX(-7px)}75%{transform:translateX(4px)}}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.card select{width:100%;margin:0 0 16px;padding:10px;border-radius:12px;background:#0b2b21;color:var(--ink);border:1px solid rgba(255,255,255,.25);font:600 16px Fredoka,sans-serif}
+.seg{display:flex;gap:8px;justify-content:center;margin-bottom:16px}.seg button{width:56px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--ink);font:600 18px Fredoka,sans-serif;cursor:pointer}.seg .on{background:var(--ye);color:#1a1200;border-color:var(--ye)}
+
+.stage.fxg{animation:zoomg .9s ease-out}.stage.fxy{animation:pulsey 1s}.stage.fxr{animation:hitr .75s}
+@keyframes zoomg{0%{transform:scale(1)}20%{transform:scale(1.04);filter:brightness(1.5) saturate(1.5);box-shadow:inset 0 0 180px rgba(255,210,63,.55)}100%{transform:none;filter:none}}
+@keyframes pulsey{0%,100%{box-shadow:inset 0 0 0 rgba(255,210,63,0)}35%{box-shadow:inset 0 0 130px rgba(255,200,60,.4)}}
+@keyframes hitr{0%{transform:none}8%{transform:translate(-18px,7px) rotate(-.9deg);filter:saturate(2.2) contrast(1.25);box-shadow:inset 0 0 200px rgba(255,40,60,.65)}18%{transform:translate(15px,-7px) rotate(.8deg)}32%{transform:translate(-10px,4px)}50%{transform:translate(6px)}100%{transform:none;filter:none}}
+@keyframes glow{50%{text-shadow:0 3px 0 rgba(0,0,0,.35),0 0 70px currentColor,0 0 14px #fff;transform:scale(1.1)}}
+@keyframes wob{25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@keyframes glitch{0%{transform:translate(0)}25%{transform:translate(-5px,2px);text-shadow:-4px 0 #0ff,4px 0 #f0f}50%{transform:translate(5px,-2px);text-shadow:4px 0 #0ff,-4px 0 #f0f}75%{transform:translate(-3px)}100%{transform:none}}
+.res.g .w{animation:pop .6s cubic-bezier(.2,1.6,.4,1),glow 1s ease-in-out .5s 2}.res.y .w{animation:pop .6s cubic-bezier(.2,1.6,.4,1),wob .5s ease-in-out .5s 2}.res.r .w{animation:pop .4s,glitch .5s steps(3) .4s 3}
+.flash.y{animation:fl .9s;background:radial-gradient(circle,rgba(255,210,63,.3),transparent 70%)}
+.st{font-size:44px;letter-spacing:4px}.st i{display:inline-block;font-style:normal;animation:pop .5s cubic-bezier(.2,1.6,.4,1) both;color:#ffd23f;text-shadow:0 0 18px rgba(255,210,63,.8)}.st i.off{color:#fff;opacity:.2;text-shadow:none}
+</style>
+</head>
+<body>
+<canvas id="mat"></canvas>
+<main>
+<div class="hud">
+<div class="logo"><i></i>Scale Mat</div>
+<div class="pill">ROUND <b id="rd">1 / 5</b></div>
+<div class="pill" id="scp">SCORE <b id="sc">0</b></div>
+<div class="pill">BEST <b id="bs">0</b></div>
+<button class="snd" id="mus" aria-label="Toggle music" title="Music">🎵</button>
+<button class="snd" id="snd" aria-label="Toggle sound effects" title="Sound effects">🔊</button>
+</div>
+<div class="prog" id="prog"></div>
+<div class="wrap"><section class="stage" id="stage">
+<canvas id="cv"></canvas>
+<div class="flash" id="fl"></div>
+<div class="zoom"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">−</button></div>
+<div class="res" id="res" hidden></div>
+<div class="ov" id="ov"></div>
+</section></div>
+<footer>
+<div class="cards">
+<div class="oc r"><i></i><div><b id="rn"></b><small id="rs"></small></div></div>
+<div class="oc t"><i></i><div><b id="tn"></b><small id="ts"></small></div></div>
+</div>
+<button class="btn" id="lock">Lock In</button>
+</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id),TAU=Math.PI*2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const UN=[[9.4607e15,'ly'],[1.496e11,'AU'],[1e3,'km'],[1,'m'],[.01,'cm'],[1e-3,'mm'],[1e-6,'µm'],[1e-9,'nm']];
+const fmt=v=>{if(!v)return'0';const m=Math.abs(v)/100,u=UN.find(x=>m>=x[0]*.98)||UN[7],q=m/u[0];return(q>=1000?Math.round(q).toLocaleString('en'):+q.toPrecision(3))+' '+u[1]};
+const circ=(p,x,y,r,ccw)=>{p.moveTo(x+r,y);p.arc(x,y,r,0,TAU,!!ccw)};
+const OBJ=[];
+function D(n,sub,L,dim,t,ar){return{n,sub,L,dim,t,ar}}
+let N=5;
+const E=(p,x,y,rx,ry)=>{p.moveTo(x+rx,y);p.ellipse(x,y,rx,ry,0,0,TAU)};
+const Q=(p,x1,y1,x2,y2,w)=>{const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),nx=dy/l*w/2,ny=-dx/l*w/2;p.moveTo(x1+nx,y1+ny);p.lineTo(x2+nx,y2+ny);p.lineTo(x2-nx,y2-ny);p.lineTo(x1-nx,y1-ny);p.closePath()};
+const RG=(p,x,y,r,w)=>{circ(p,x,y,r);circ(p,x,y,r-w,1)};
+const TPL={
+quad:()=>{const p=new Path2D();E(p,100,45,58,26);E(p,150,38,24,18);E(p,172,30,20,13);E(p,178,16,5,9);[[54,60],[74,62],[122,62],[142,60]].forEach(([x,y])=>p.rect(x,y,12,100-y));Q(p,44,36,20,58,9);return[p,200,100]},
+giraffe:()=>{const p=new Path2D();E(p,62,122,42,24);[28,40,76,88].forEach(x=>p.rect(x,140,8,60));Q(p,90,110,112,30,18);E(p,120,22,16,9);p.rect(114,6,3,8);p.rect(122,6,3,8);Q(p,20,110,16,150,4);return[p,136,200]},
+bird:()=>{const p=new Path2D();E(p,50,90,32,42);Q(p,58,60,62,24,14);E(p,66,16,12,10);p.addPath(new Path2D('M76,14 L96,18 L76,22 Z'));Q(p,44,126,44,160,4);Q(p,58,126,58,160,4);return[p,100,162]},
+fish:()=>{const p=new Path2D();E(p,90,56,72,30);p.addPath(new Path2D('M150,56 L200,14 L188,56 L200,98 Z M74,28 L96,4 L112,28 Z M84,80 L100,82 L70,96 Z'));return[p,200,100]},
+person:()=>{const p=new Path2D();circ(p,30,12,11);Q(p,30,26,30,78,26);Q(p,15,30,10,76,8);Q(p,45,30,50,76,8);Q(p,23,76,22,140,12);Q(p,37,76,38,140,12);return[p,60,142]},
+bottle:()=>[new Path2D('M4,40 C4,32 12,30 12,20 L12,4 L28,4 L28,20 C28,30 36,32 36,40 L36,96 Q36,100 32,100 L8,100 Q4,100 4,96 Z'),40,100],
+tree:()=>{const p=new Path2D();p.rect(44,110,12,50);E(p,50,60,40,32);E(p,30,80,26,22);E(p,70,80,26,22);E(p,50,40,28,26);return[p,100,160]},
+bus:()=>{const p=new Path2D('M4,50 L4,12 Q4,4 12,4 L188,4 Q196,4 198,12 L200,40 L200,50 Q200,54 196,54 L8,54 Q4,54 4,50 Z');[14,44,74,104,134].forEach(x=>{p.moveTo(x,10);p.lineTo(x,26);p.lineTo(x+22,26);p.lineTo(x+22,10);p.closePath()});[42,158].forEach(x=>{circ(p,x,54,11);circ(p,x,54,4,1)});return[p,200,66]},
+plane:()=>{const p=new Path2D();E(p,100,60,96,8);p.addPath(new Path2D('M80,58 L70,4 L84,4 L112,58 Z M80,62 L112,62 L84,116 L70,116 Z M10,58 L6,38 L14,38 L26,58 Z M10,62 L26,62 L14,82 L6,82 Z'));return[p,200,120]},
+tower:()=>[new Path2D('M50,0 L56,30 L70,36 L70,60 L74,60 L74,200 L26,200 L26,60 L30,60 L30,36 L44,30 Z'),100,200],
+rocket:()=>{const p=new Path2D('M20,0 C28,14 32,30 32,50 L32,140 L8,140 L8,50 C8,30 12,14 20,0 Z M8,110 L8,140 L0,150 Z M32,110 L40,150 L32,140 Z');return[p,40,150]},
+stick:()=>{const p=new Path2D();p.rect(12,0,88,10);p.addPath(new Path2D('M12,0 L12,10 L0,5 Z'));return[p,100,10]},
+c:()=>{const p=new Path2D();circ(p,50,50,50);return[p,100,100]},
+e:()=>{const p=new Path2D();E(p,50,30,50,30);return[p,100,60]},
+r:()=>{const p=new Path2D();p.roundRect(0,0,100,60,6);return[p,100,60]},
+k:()=>[new Path2D('M50,0 L100,100 L0,100 Z'),100,100],
+mount:()=>[new Path2D('M0,100 L30,42 L40,50 L60,0 L100,100 Z'),100,100],
+ship:()=>{const p=new Path2D('M0,40 L200,40 L180,70 L20,70 Z');p.rect(60,20,60,20);p.rect(90,4,20,16);return[p,200,70]},
+bike:()=>{const p=new Path2D();RG(p,28,60,26,4);RG(p,132,60,26,4);Q(p,28,60,66,60,4);Q(p,66,60,52,28,4);Q(p,52,28,104,28,4);Q(p,104,28,66,60,4);Q(p,104,28,132,60,4);Q(p,52,28,46,22,4);Q(p,104,28,100,10,4);Q(p,100,10,114,10,4);Q(p,42,22,60,22,5);return[p,160,90]}
+};
+/* realistic silhouettes */
+const T=(d,w,h,f)=>()=>{const p=new Path2D(d);f&&f(p);return[p,w,h]},HL=(p,x,y,w,h)=>{p.moveTo(x,y);p.lineTo(x,y+h);p.lineTo(x+w,y+h);p.lineTo(x+w,y);p.closePath()};
+const F=(w,h,f)=>()=>{const p=new Path2D();f(p);return[p,w,h]},QS=(p,a,w)=>a.forEach(v=>Q(p,...v,w));
+Object.assign(TPL,{
+pear:T('M35,4C42,4 44,14 44,24C46,34 60,44 64,64C68,84 54,98 35,98C16,98 2,84 6,64C10,44 24,34 26,24C26,14 28,4 35,4Z',70,100),
+egg:T('M2,35C4,16 40,2 62,2C86,2 98,18 98,35C98,52 86,68 62,68C40,68 4,54 2,35Z',100,70),
+drop:T('M35,2C40,20 68,46 68,68C68,86 54,98 35,98C16,98 2,86 2,68C2,46 30,20 35,2Z',70,100),
+mango:T('M8,34C14,10 56,2 84,16C100,26 96,52 68,64C40,74 4,64 8,34Z M50,10C52,4 60,0 68,4C64,10 58,14 50,10Z',100,74),
+berry:T('M50,96C20,80 4,56 6,34C8,14 40,16 50,24C60,16 92,14 94,34C96,56 80,80 50,96Z M34,14L50,2L66,14L50,22Z',100,98),
+pine:T('M30,40C48,40 56,54 56,72C56,90 44,98 30,98C16,98 4,90 4,72C4,54 12,40 30,40Z M30,42L18,12L26,24L30,2L34,24L42,12Z',60,100),
+leaf:T('M2,56C6,26 34,4 98,2C96,34 70,58 32,54L14,58Z',100,60),
+lemon:T('M2,25C20,4 80,4 98,25C80,46 20,46 2,25Z',100,50),
+mug:T('M8,10L72,10L68,84Q68,88 62,88L18,88Q12,88 12,84Z M72,24C96,22 98,58 66,60L66,52C84,50 84,32 72,32Z',100,90),
+hat:T('M8,46L8,34C8,10 30,4 50,4C72,4 92,12 92,34L92,38L100,38L100,46Z',100,46),
+helmet:T('M4,64C2,28 24,4 54,4C82,4 98,26 98,50L98,64Z',100,68),
+shoe:T('M4,6L34,6C34,20 44,26 60,30C82,34 98,40 98,52L98,58L4,58Z',100,60),
+tshirt:T('M30,4C38,12 62,12 70,4L98,20L86,38L74,32L74,88L26,88L26,32L14,38L2,20Z',100,90),
+umbrella:T('M2,50C6,20 30,4 50,4C70,4 94,20 98,50C88,42 82,42 74,50C68,42 60,42 50,50C40,42 32,42 26,50C18,42 12,42 2,50Z M48,48L52,48L52,90C52,98 44,98 44,92L46,92C46,94 48,94 48,92Z',100,98),
+bread:T('M4,50L4,28C0,8 20,2 50,2C80,2 100,8 96,28L96,50Z',100,50),
+mouse:T('M4,30C4,8 30,2 60,4C88,6 98,18 98,30C98,42 88,54 60,56C30,58 4,52 4,30Z',100,60),
+laptop:T('M14,4L86,4L86,50L14,50Z M2,54L98,54L92,64L8,64Z',100,66,p=>HL(p,20,10,60,34)),
+monitor:T('M4,4L96,4L96,56L4,56Z M42,58L58,58L62,68L38,68Z M26,70L74,70L74,74L26,74Z',100,74,p=>HL(p,10,10,80,40)),
+bulb:T('M30,2C50,2 58,18 58,32C58,46 46,52 44,66L16,66C14,52 2,46 2,32C2,18 10,2 30,2Z M16,70L44,70L44,80L16,80Z M18,84L42,84C42,96 36,98 30,98C24,98 18,96 18,84Z',60,98),
+kb:T('M0,0H100V34H0Z',100,34,p=>{for(let r=0;r<3;r++)for(let c=0;c<12;c++)HL(p,3+c*8,3+r*10,6,7)}),
+clock:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,44,1);p.rect(48,20,4,32);p.rect(48,48,24,4)}),
+flower:F(60,100,p=>{[[30,12],[46,24],[40,42],[20,42],[14,24]].forEach(([x,y])=>circ(p,x,y,11));circ(p,30,28,8);Q(p,30,36,30,98,4);E(p,44,78,13,5)}),
+rosette:F(100,100,p=>{for(let i=0;i<5;i++)circ(p,50+30*Math.cos(i*1.2566),50+30*Math.sin(i*1.2566),24);circ(p,50,50,20)}),
+island:T('M4,30C10,18 24,20 34,12C46,4 62,10 74,8C88,6 98,14 96,24C94,34 80,32 70,40C58,48 40,44 28,46C14,48 2,42 4,30Z',100,50),
+scissors:F(100,70,p=>{QS(p,[[30,20,96,50],[30,50,96,20]],6);RG(p,16,14,12,5);RG(p,16,56,12,5)}),
+hammer:T('M0,20H76V30H0Z M70,4H98V46H70Z',100,50),
+wrench:F(100,60,p=>{Q(p,20,30,98,30,10);circ(p,14,30,16);HL(p,-2,26,16,8)}),
+knife:T('M30,10C56,4 84,10 98,26L30,26Z M0,10H34V26H0Z',100,30),
+shovel:T('M0,18H68V26H0Z M64,6L92,8C100,20 100,24 92,36L64,38Z',100,44),
+brush:T('M0,12H76V18H0Z M74,4H98V18H74Z',100,22),
+chair:T('M6,2L14,2L16,44L54,44L54,52L48,52L48,98L40,98L40,52L16,52L14,98L6,98Z',60,100),
+table:T('M0,0H100V8H90V60H82V8H18V60H10V8H0Z',100,60),
+sofa:T('M4,10Q4,2 12,2L88,2Q96,2 96,10L96,26Q100,26 100,34L100,44L92,44L92,50L84,50L84,44L16,44L16,50L8,50L8,44L0,44L0,34Q0,26 4,26Z',100,50),
+bed:T('M0,8H8V26H92V14H100V50H92V40H8V50H0Z',100,50),
+turbine:F(80,100,p=>{p.addPath(new Path2D('M38,34L42,34L44,100L36,100Z'));QS(p,[[40,34,40,0],[40,34,72,52],[40,34,8,52]],5);circ(p,40,34,4)}),
+cone:T('M25,4L35,4L50,86L58,86L58,96L2,96L2,86L10,86Z',60,96),
+stop:T('M29,0L71,0L100,29L100,71L71,100L29,100L0,71L0,29Z',100,100),
+moto:F(160,92,p=>{RG(p,26,68,22,6);RG(p,134,68,22,6);p.addPath(new Path2D('M30,60L58,30L92,26L104,14L120,14L112,34L136,60L120,60L100,44L64,52L44,66Z'))}),
+truck:F(200,66,p=>{p.addPath(new Path2D('M2,4H128V50H2Z M134,20H172L196,36V50H134Z'));[40,100,160].forEach(x=>{circ(p,x,54,11);circ(p,x,54,4,1)})}),
+train:F(200,54,p=>{p.addPath(new Path2D('M4,10Q4,2 12,2L160,2C182,2 196,20 198,40L198,44L4,44Z'));for(let i=0;i<8;i++)HL(p,14+i*18,10,12,12);HL(p,168,10,22,14);[30,60,140,170].forEach(x=>{circ(p,x,46,6);circ(p,x,46,2.5,1)})}),
+heli:F(200,80,p=>{E(p,70,52,50,22);[[100,50,190,44,8],[10,12,150,12,4],[80,12,80,32,4],[30,78,110,78,3],[45,70,45,78,3],[95,70,95,78,3]].forEach(a=>Q(p,...a))}),
+sub:F(200,80,p=>{E(p,100,40,96,22);p.rect(80,12,34,20);p.rect(96,2,4,12);Q(p,196,20,196,60,4)}),
+pawn:T('M12,26H28L26,40H34L38,80H40V100H0V80H2L6,40H14Z',40,100,p=>circ(p,20,14,12)),
+squid:T('M2,30C24,2 70,4 96,24L198,10L198,16L104,30L198,46L198,52L96,36C70,56 24,58 2,30Z',200,60),
+octo:F(100,100,p=>{E(p,50,28,30,26);QS(p,[[30,44,10,96],[40,50,32,98],[50,52,50,98],[60,50,68,98],[70,44,90,96]],7)}),
+jelly:F(100,100,p=>{p.addPath(new Path2D('M4,50C4,10 96,10 96,50Z'));[20,36,50,64,80].forEach(x=>Q(p,x,50,x+(x%3-1)*4,98,4))}),
+crab:F(100,90,p=>{E(p,50,50,32,22);[-1,1].forEach(d=>{[0,1,2].forEach(i=>Q(p,50+d*26,50+i*6,50+d*(46+i*2),64+i*12,4));circ(p,50+d*42,20,10);Q(p,50+d*26,44,50+d*42,24,5)})}),
+turtle:F(116,84,p=>{p.addPath(new Path2D('M14,60C14,14 84,14 90,60Z'));E(p,102,50,10,8);QS(p,[[30,60,20,82],[74,60,86,82],[14,52,2,60]],8)}),
+frog:F(100,72,p=>{E(p,50,44,34,20);E(p,80,34,18,14);circ(p,84,20,6);QS(p,[[30,50,14,68],[14,68,50,68],[74,52,84,68]],8)}),
+bug:F(100,60,p=>{circ(p,86,30,10);E(p,60,30,14,12);E(p,28,30,24,14);[42,56,70].forEach(x=>{Q(p,x,34,x-8,58,2.5);Q(p,x,26,x-8,2,2.5)});Q(p,90,22,98,6,2)}),
+butter:F(100,84,p=>{E(p,30,26,28,20);E(p,70,26,28,20);E(p,34,66,20,16);E(p,66,66,20,16);p.rect(47,10,6,72)}),
+elephant:F(200,140,p=>{E(p,90,62,70,42);E(p,160,56,32,32);E(p,138,58,14,24);[40,68,110,138].forEach(x=>p.rect(x,80,16,60));QS(p,[[180,72,190,128],[20,40,6,80]],12)}),
+reptile:F(200,60,p=>{E(p,110,34,64,12);E(p,178,32,22,10);p.addPath(new Path2D('M50,34L2,46L54,42Z'));QS(p,[[80,36,66,56],[100,36,116,58],[140,36,126,56],[150,36,162,58]],6)})
+});
+const MAPS=[[/^(Mangga|Pepaya|Nangka)/,'mango'],[/^(Alpukat|Buah Pir)/,'pear','h'],[/^(Telur|Kentang)/,'egg'],[/^Tetes Air/,'drop','h'],[/^Stroberi/,'berry','h'],[/^Nanas/,'pine'],[/^Daun/,'leaf'],[/Rugbi|Selancar/,'lemon'],[/^(Cangkir|Gelas)/,'mug'],[/^(Peci|Topi)/,'hat'],[/^Helm/,'helmet'],[/^(Sepatu|Sandal|Sendal)/,'shoe'],[/^(Kaos|Kemeja)/,'tshirt'],[/^Payung Golf/,'umbrella'],[/^Roti Tawar/,'bread'],[/^Mouse/,'mouse'],[/^Laptop/,'laptop'],[/^(TV|Monitor)/,'monitor'],[/^Bohlam/,'bulb'],[/^Keyboard/,'kb'],[/^Jam (Dinding|Tangan)/,'clock'],[/^(Bunga Mawar|Anggrek)/,'flower'],[/Rafflesia/,'rosette'],[/^(Pulau|Danau|Great Barrier|Gurun)/,'island'],[/^Gunting/,'scissors'],[/^Palu/,'hammer'],[/^Kunci (Inggris|Pas)/,'wrench'],[/^Pisau/,'knife'],[/^(Sekop|Cangkul)/,'shovel'],[/^Sikat/,'brush'],[/^Kursi/,'chair'],[/^(Meja|Bangku)/,'table'],[/^Sofa/,'sofa'],[/^(Kasur|Ranjang|Tempat Tidur)/,'bed'],[/^Turbin/,'turbine'],[/^Kerucut/,'cone'],[/^Rambu/,'stop'],[/^(Motor|Harley|Vespa)/,'moto'],[/^(Truk|Pikap)/,'truck'],[/^(Kereta|Gerbong|Rangkaian KRL)/,'train'],[/^Helikopter/,'heli'],[/^Kapal Selam/,'sub'],[/^(Pion|Raja) Catur/,'pawn'],[/^Cumi/,'squid'],[/^Gurita/,'octo'],[/^Ubur/,'jelly'],[/^Kepiting/,'crab'],[/^(Penyu|Kura)/,'turtle'],[/^(Katak|Kodok)/,'frog'],[/^(Lalat|Lebah|Kecoa|Kumbang|Semut|Nyamuk|Jangkrik|Tungau|Kelabang|Belalang)/,'bug'],[/^Kupu/,'butter'],[/^Gajah|Elephant/,'elephant'],[/^(Tokek|Bunglon|Cicak|Komodo|Biawak|Buaya|Salamander)/,'reptile']];
+/* parametric animals: side view, facing right */
+const AN=r=>()=>{const{rx,ry,ll,lw,hd,sn,ne,hup,ear,tail,tl,mane=0,horn=0,hump=0,ant=0,wool=0}=r,p=new Path2D(),cy=-ll-ry*.8,hx=rx+ne,hy=cy-ry*.5-hup;
+ E(p,0,cy,rx,ry);if(wool)[-.6,-.2,.25,.6].forEach(k=>circ(p,rx*k,cy-ry*.3,ry*.9));if(hump)E(p,-rx*.05,cy-ry,hump,hump*.9);
+ [-.68,-.4,.4,.68].forEach(k=>{const x=rx*k;Q(p,x,cy,x,-lw*.3,lw);E(p,x+lw*.25,-lw*.25,lw*.75,lw*.3)});
+ if(mane)circ(p,hx-hd*.2,hy+hd*.2,hd*1.7);Q(p,rx*.5,cy-ry*.2,hx,hy,ry*1.05);
+ if(mane==2)Q(p,rx*.4,cy-ry*.8,hx-hd*.7,hy-hd*.8,hd*.45);
+ E(p,hx,hy,hd*1.05,hd*.9);E(p,hx+hd*.7+sn*.5,hy+hd*.3,sn*.5+hd*.4,hd*.5);
+ if(ear=='p'){p.moveTo(hx-hd*.6,hy-hd*.5);p.lineTo(hx-hd*.2,hy-hd*1.9);p.lineTo(hx+hd*.3,hy-hd*.7);p.closePath()}
+ else if(ear=='f')E(p,hx-hd*.5,hy+hd*.1,hd*.35,hd*.85);else if(ear=='r')circ(p,hx-hd*.3,hy-hd*.9,hd*.4);
+ else if(ear=='L')Q(p,hx-hd*.3,hy-hd*.6,hx-hd*1.3,hy-hd*2.7,hd*.5);
+ if(horn==1){Q(p,hx-hd*.2,hy-hd*.8,hx-hd*.5,hy-hd*1.6,hd*.22);Q(p,hx+hd*.2,hy-hd*.8,hx+hd*.5,hy-hd*1.6,hd*.22)}
+ if(horn==2){p.moveTo(hx+hd*.9+sn*.5,hy);p.lineTo(hx+hd*1.3+sn*.6,hy-hd*1.4);p.lineTo(hx+hd*1.6+sn*.9,hy+hd*.1);p.closePath()}
+ if(ant){Q(p,hx-hd*.3,hy-hd*.8,hx-hd*1.4,hy-hd*2.8,hd*.2);Q(p,hx-hd*.3,hy-hd*.8,hx+hd*.6,hy-hd*3,hd*.2);Q(p,hx-hd*.8,hy-hd*1.7,hx+hd*.2,hy-hd*1.9,hd*.16)}
+ const tx=-rx,ty=cy-ry*.3;
+ if(tail=='l')Q(p,tx+3,ty,tx-tl*.7,ty-tl*.6,lw*.55);else if(tail=='h'){Q(p,tx+3,ty,tx-4,cy+ry*.9,lw*.9);Q(p,tx-4,cy+ry*.9,tx-tl*.3,cy+ry*1.9,lw*.6)}
+ else if(tail=='b')E(p,tx-tl*.4,ty+ry*.3,tl*.6,ry*.38);else if(tail=='r'){Q(p,tx+3,ty,tx-tl*.2,cy+ry*1.4,lw*.35);circ(p,tx-tl*.2,cy+ry*1.5,lw*.5)}
+ else circ(p,tx-2,ty,lw*.6);
+ const L=tx-(tail=='l'?tl*.7:tail=='b'?tl:tail=='h'?tl*.3:tail=='r'?tl*.2:4),R=hx+hd*1.05+sn+hd*.4,top=Math.min(hy-hd*(ant?3.1:ear=='L'?3:2),cy-ry-hump*1.8,cy-ry),q=new Path2D();
+ q.addPath(p,new DOMMatrix().translate(-L,-top));return[q,R-L,-top]};
+const AS={cat:{rx:34,ry:15,ll:20,lw:6,hd:12,sn:4,ne:8,hup:4,ear:'p',tail:'l',tl:50},dog:{rx:42,ry:19,ll:32,lw:8,hd:14,sn:14,ne:10,hup:8,ear:'f',tail:'l',tl:30},wolf:{rx:44,ry:18,ll:42,lw:7,hd:13,sn:18,ne:12,hup:6,ear:'p',tail:'b',tl:34},
+horse:{rx:50,ry:22,ll:62,lw:7,hd:16,sn:24,ne:24,hup:34,ear:'p',tail:'h',tl:40,mane:2},zebra:{rx:46,ry:21,ll:54,lw:7,hd:15,sn:22,ne:22,hup:30,ear:'p',tail:'r',tl:20,mane:2},cow:{rx:52,ry:26,ll:40,lw:10,hd:15,sn:14,ne:12,hup:4,ear:'f',horn:1,tail:'r',tl:20},
+lion:{rx:48,ry:21,ll:38,lw:11,hd:14,sn:10,ne:10,hup:8,ear:'r',mane:1,tail:'r',tl:34},tiger:{rx:50,ry:20,ll:36,lw:10,hd:14,sn:9,ne:12,hup:4,ear:'r',tail:'l',tl:60},bear:{rx:46,ry:28,ll:30,lw:14,hd:16,sn:12,ne:8,hup:4,ear:'r',tail:'s',tl:4,hump:16},
+hippo:{rx:60,ry:34,ll:16,lw:18,hd:24,sn:26,ne:10,hup:-6,ear:'r',tail:'s',tl:4},rhino:{rx:54,ry:30,ll:28,lw:16,hd:19,sn:22,ne:8,hup:-6,ear:'p',horn:2,tail:'r',tl:12},pig:{rx:38,ry:22,ll:20,lw:8,hd:14,sn:10,ne:6,hup:0,ear:'p',tail:'s',tl:6},
+deer:{rx:38,ry:16,ll:54,lw:5,hd:11,sn:12,ne:16,hup:26,ear:'p',ant:1,tail:'s',tl:6},sheep:{rx:34,ry:20,ll:26,lw:6,hd:11,sn:8,ne:8,hup:6,ear:'f',wool:1,tail:'s',tl:6},rabbit:{rx:24,ry:16,ll:10,lw:9,hd:10,sn:6,ne:8,hup:6,ear:'L',tail:'s',tl:6},
+camel:{rx:46,ry:22,ll:64,lw:7,hd:12,sn:14,ne:36,hup:44,ear:'r',hump:20,tail:'l',tl:20},rat:{rx:16,ry:9,ll:5,lw:3,hd:8,sn:8,ne:4,hup:2,ear:'r',tail:'l',tl:44},monkey:{rx:24,ry:14,ll:26,lw:6,hd:11,sn:5,ne:8,hup:14,ear:'r',tail:'l',tl:50}};
+for(const k in AS)TPL[k]=AN(AS[k]);
+Object.assign(TPL,{
+shark:T('M2,40C40,30 70,22 110,10L118,0L124,12C150,16 176,30 198,36L176,42L196,66L160,48C120,58 60,56 2,40Z M70,48L96,68L100,50Z',200,68),
+whale:T('M2,44C20,20 90,14 140,30C168,40 180,44 198,30L190,46L198,64C180,56 168,60 140,64C90,76 20,72 2,44Z M60,60L90,80L92,62Z',200,80),
+dolphin:T('M2,36C6,32 14,34 24,32C50,14 90,8 120,20C150,28 170,32 198,24L188,36L198,50C170,44 150,44 120,50C90,54 50,48 24,42C14,42 6,42 2,36Z M92,12L104,0L112,16Z',200,54)});
+MAPS.unshift([/^(Hippopotamus|Kuda Nil)/,'hippo'],[/^(Domestic Cat|Kucing)/,'cat'],[/^(Labrador|Golden Retriever|Chihuahua)/,'dog'],[/^(Grey Wolf|Serigala)/,'wolf'],[/^(Horse|Kuda Pacu)/,'horse'],[/^Zebra/,'zebra'],[/^(Holstein|Sapi|Anoa)/,'cow'],[/^(Lion|Singa)/,'lion'],[/^Harimau/,'tiger'],[/^(Brown Bear|Beruang|Panda)/,'bear'],[/^Badak/,'rhino'],[/^(Babi|Tapir|Trenggiling|Landak)/,'pig'],[/^Rusa/,'deer'],[/^(Domba|Kambing)/,'sheep'],[/^Kelinci/,'rabbit'],[/^Unta/,'camel'],[/^(Tikus|Kanguru Tikus)/,'rat'],[/^Monyet/,'monkey'],
+[/^(Great White|Hiu|Whale Shark)/,'shark'],[/^(Orca|Humpback|Blue Whale|Paus)/,'whale'],[/^(Bottlenose|Lumba)/,'dolphin']);
+/* people, plants, birds, fish, aircraft, landmarks */
+Object.assign(TPL,{
+person:T('M18,26L42,26L50,34L54,72L48,74L44,46L42,72L44,140L33,140L30,90L27,140L16,140L18,72L16,46L12,74L6,72L10,34Z M24,22L36,22L36,28L24,28Z',60,142,p=>circ(p,30,12,10)),
+tree:F(100,160,p=>{p.addPath(new Path2D('M42,160L44,110L34,88L40,84L46,96L50,60L56,96L64,80L68,86L58,110L60,160Z'));[[50,40,30],[26,58,22],[74,58,22],[38,28,20],[64,26,20],[50,66,24]].forEach(a=>circ(p,...a))}),
+conifer:T('M50,0L72,36L62,36L84,70L70,70L96,110L56,110L56,130L44,130L44,110L4,110L30,70L16,70L38,36L28,36Z',100,130),
+palm:F(100,160,p=>{Q(p,50,160,54,36,6);[[8,50],[22,20],[40,6],[70,4],[88,20],[98,52]].forEach(([x,y])=>{Q(p,54,36,x,y,5);Q(p,x,y,x+(x<54?-6:6),y+24,4)})}),
+bamboo:F(100,160,p=>{QS(p,[[20,160,24,20],[50,160,48,0],[80,160,76,34]],6);[[24,50],[48,40],[76,70],[22,100],[50,90],[78,110]].forEach(([x,y])=>p.rect(x-6,y,12,3));E(p,14,20,9,3);E(p,84,34,9,3);E(p,56,4,9,3)}),
+sbird:F(100,70,p=>{E(p,44,38,30,20);circ(p,76,24,12);p.addPath(new Path2D('M86,22L100,26L86,30Z'));Q(p,18,42,2,60,10);QS(p,[[44,56,44,68],[54,56,54,68]],2.5)}),
+flamingo:F(100,160,p=>{E(p,40,88,30,18);QS(p,[[58,80,78,52],[78,52,60,26],[60,26,66,12]],7);E(p,68,10,8,6);p.addPath(new Path2D('M72,7L92,20L74,15Z'));QS(p,[[40,104,40,158],[52,104,58,158]],3.5);p.addPath(new Path2D('M14,90L20,100L2,104Z'))}),
+rooster:F(100,122,p=>{E(p,46,74,32,24);Q(p,62,64,72,30,16);E(p,74,24,9,8);[[70,12],[76,8],[82,12]].forEach(([x,y])=>circ(p,x,y,3.5));p.addPath(new Path2D('M82,22L96,27L82,31Z'));E(p,80,38,3,6);p.addPath(new Path2D('M22,62C4,44 2,18 14,4C16,26 24,34 34,50Z M20,72C0,62 -2,42 4,30C10,46 18,54 30,62Z'));QS(p,[[42,94,42,118],[56,94,56,118]],4);p.rect(34,116,14,4);p.rect(48,116,14,4)}),
+owl:T('M30,4C44,4 52,14 52,28C58,40 60,64 54,84C50,96 40,98 30,98C20,98 10,96 6,84C0,64 2,40 8,28C8,14 16,4 30,4Z M8,28L6,6L20,14Z M52,28L40,14L54,6Z',60,100,p=>{circ(p,20,32,6,1);circ(p,40,32,6,1)}),
+swan:F(100,90,p=>{E(p,40,68,34,16);QS(p,[[60,62,74,40],[74,40,62,22],[62,22,70,12]],7);E(p,72,10,8,6);p.addPath(new Path2D('M78,8L94,14L78,15Z'));QS(p,[[32,82,32,90],[46,82,46,90]],3)}),
+kangaroo:F(100,150,p=>{E(p,44,86,22,34);circ(p,44,30,10);p.addPath(new Path2D('M50,26L66,34L50,38Z'));QS(p,[[38,22,34,2],[48,22,52,4]],5);Q(p,26,110,30,144,10);Q(p,30,144,56,148,8);Q(p,52,116,84,138,8);Q(p,30,120,0,146,7)}),
+tuna:T('M2,40C20,26 60,14 110,16C140,18 160,30 176,40L198,14L190,40L198,66L176,42C160,52 140,62 110,64C60,66 20,54 2,40Z M90,16L106,4L124,18Z',200,70),
+goldfish:T('M2,50C2,26 30,10 56,10C80,10 96,30 100,46C120,34 150,20 158,26C166,34 152,46 150,50C152,54 166,66 158,74C150,80 120,66 100,54C96,70 80,90 56,90C30,90 2,74 2,50Z M40,12L60,0L74,12Z',160,90),
+manta:T('M100,4C110,4 116,30 198,30C160,46 130,54 108,60L100,98L92,60C70,54 40,46 2,30C84,30 90,4 100,4Z',200,98),
+fighter:T('M2,54L100,52C150,50 190,58 198,60C190,62 150,70 100,68L2,66Z M60,54L110,6L128,6L112,54Z M60,66L112,66L128,114L110,114Z M4,54L14,34L26,34L26,54Z M4,66L26,66L26,86L14,86Z',200,120),
+lighthouse:T('M38,40L62,40L72,196L28,196Z M32,34L68,34L68,40L32,40Z M42,20L58,20L58,34L42,34Z M38,20L50,4L62,20Z',100,196),
+burj:T('M50,0L52,60L58,60L58,100L64,100L64,150L70,150L74,200L26,200L30,150L36,150L36,100L42,100L42,60L48,60Z',100,200),
+empire:T('M50,0L52,30L56,30L56,44L62,44L62,60L70,60L70,80L82,80L82,200L18,200L18,80L30,80L30,60L38,60L38,44L44,44L44,30L48,30Z',100,200),
+eiffel:T('M50,0L54,40L60,40L60,46L66,46L72,100L80,100L80,106L96,200L78,200L70,150C60,126 40,126 30,150L22,200L4,200L20,106L20,100L28,100L34,46L40,46L40,40L46,40Z',100,200),
+monas:T('M50,0C57,8 56,16 50,22C44,16 43,8 50,0Z M46,24L54,24L56,150L44,150Z M20,150L80,150L84,160L16,160Z M30,160L70,160L70,200L30,200Z',100,200),
+volcano:T('M0,100C30,90 38,30 42,18L46,12L54,12L58,18C62,30 70,90 100,100Z',100,100),
+stepped:T('M0,100L0,84L10,84L10,68L22,68L22,52L34,52L34,36L44,36L44,22L48,22L48,8L52,8L52,22L56,22L56,36L66,36L66,52L78,52L78,68L90,68L90,84L100,84L100,100Z',100,100),
+colosseum:T('M0,50L0,10Q0,2 10,2L90,2Q100,2 100,10L100,50Z',100,50,p=>{for(let i=0;i<8;i++){HL(p,6+i*11.5,8,7,12);HL(p,6+i*11.5,28,7,18)}})});
+MAPS.push([/^(Goldfish|Ikan Badut)/,'goldfish'],[/Salmon|Tuna|Ikan Todak/,'tuna'],[/^Pari Manta/,'manta'],[/^(F-16|F-22)/,'fighter'],[/^(Christmas Tree|Pohon Pinus|Giant Sequoia|Redwood|General Sherman)/,'conifer'],[/^(Kelapa Sawit|Pohon Pisang)/,'palm'],[/^Bambu/,'bamboo'],[/^(Burung Gereja|Merpati|Kolibri|Elang|Kakatua|Burung Cendrawasih)/,'sbird'],[/^(Greater Flamingo|Bangau)/,'flamingo'],[/^(Rooster|Ayam Jago|Burung Merak)/,'rooster'],[/^Burung Hantu/,'owl'],[/^(Angsa|Pelikan)/,'swan'],[/^Kangguru/,'kangaroo'],[/Lighthouse/,'lighthouse'],[/^(Burj Khalifa|Shanghai|Taipei|Marina Bay|Menara Petronas)/,'burj'],[/^Empire/,'empire'],[/^(Menara Eiffel|Tokyo Tower)/,'eiffel'],[/^Monas/,'monas'],[/^Gunung (Tangkuban|Merapi|Agung|Semeru|Fuji|Bromo|Krakatau|Rinjani)|^Olympus/,'volcano'],[/^Candi Borobudur/,'stepped'],[/^Colosseum/,'colosseum']);
+/* food, ships, tools, landmarks, toys */
+Object.assign(TPL,{
+carrot:F(100,46,p=>{p.addPath(new Path2D('M16,6L92,20C98,22 98,24 92,26L16,40Z'));QS(p,[[16,23,2,8],[16,23,0,23],[16,23,2,38]],4)}),
+eggplant:F(100,60,p=>{p.addPath(new Path2D('M30,22C30,10 44,10 60,20C80,28 98,40 96,50C94,60 60,56 40,44C30,38 30,30 30,22Z'));p.addPath(new Path2D('M22,18L38,6L44,24L34,30Z'));Q(p,30,14,12,4,5)}),
+chili:T('M4,10C30,4 70,10 96,4C98,16 60,22 34,22C14,22 4,18 4,10Z',100,24,p=>p.rect(0,6,8,8)),
+corn:F(100,36,p=>{E(p,58,18,40,14);p.addPath(new Path2D('M2,18L30,4L40,10L30,18L40,26L30,32Z'))}),
+grapes:F(100,100,p=>{[[50,14],[36,30],[64,30],[22,46],[50,46],[78,46],[36,62],[64,62],[50,78]].forEach(([x,y])=>circ(p,x,y,14));Q(p,50,14,58,0,4)}),
+durian:F(100,108,p=>{E(p,50,56,44,40);for(let i=0;i<20;i++){const a=i*TAU/20;Q(p,50+Math.cos(a)*44,56+Math.sin(a)*40,50+Math.cos(a)*53,56+Math.sin(a)*49,7)}}),
+croissant:T('M2,44C6,20 26,6 50,6C74,6 94,20 98,44L86,44C82,30 68,20 50,20C32,20 18,30 14,44Z',100,44),
+satay:F(100,24,p=>{Q(p,0,12,100,12,2);[26,44,62].forEach(x=>E(p,x,12,8,9))}),
+canoe:T('M0,4C10,14 30,12 50,12C70,12 90,14 100,4C96,26 78,36 50,36C22,36 4,26 0,4Z',100,36),
+sail:F(100,110,p=>{p.addPath(new Path2D('M0,86L100,86C92,100 80,108 66,108L30,108C18,108 8,98 0,86Z M46,84L46,4L84,80Z M40,84L8,84L40,20Z'));p.rect(44,0,3,86)}),
+cargo:F(200,70,p=>{p.addPath(new Path2D('M0,44L200,44L186,66L14,66Z'));for(let i=0;i<8;i++)for(let j=0;j<3;j++)p.rect(6+i*18,36-j*8,16,7);p.rect(148,8,30,36);p.rect(154,2,18,6)}),
+cruise:F(200,70,p=>{p.addPath(new Path2D('M0,46L200,46L184,66L16,66Z'));[[10,36,170,10],[26,26,140,10],[48,16,100,10]].forEach(a=>p.rect(...a));[70,90,110,130].forEach(x=>p.rect(x,2,10,16))}),
+carrier:F(200,60,p=>{p.addPath(new Path2D('M0,26L200,26L188,54L16,54Z'));p.rect(130,6,18,20);p.rect(136,0,4,8)}),
+van:F(200,66,p=>{p.addPath(new Path2D('M2,50L2,10Q2,4 8,4L130,4C150,4 160,20 176,28L194,34Q198,36 198,42L198,50Q198,54 194,54L6,54Q2,54 2,50Z'));[[10,10,30,18],[46,10,30,18],[82,10,30,18],[132,10,28,18]].forEach(a=>HL(p,...a));[46,156].forEach(x=>{circ(p,x,54,12);circ(p,x,54,5,1)})}),
+screwdriver:T('M0,8H52V32H0Z M52,16H100V24H52Z',100,40),
+saw:T('M0,6H34V48H0Z M30,10L100,10L100,28L30,44Z',100,48,p=>HL(p,8,16,18,20)),
+axe:T('M0,26H84V34H0Z M66,8C82,2 92,0 98,4L98,52C92,56 82,54 66,48Z',100,56),
+nail:T('M0,0H6V14H0Z M6,5H88L100,7L88,9H6Z',100,14),
+screw:T('M0,0H8V12H0Z M8,3H90L100,6L90,9H8Z',100,12,p=>{for(let x=14;x<86;x+=8)p.rect(x,0,3,12)}),
+arrow:F(100,20,p=>{Q(p,4,10,92,10,2);p.addPath(new Path2D('M88,4L100,10L88,16Z M0,0L14,0L20,10L14,20L0,20L6,10Z'))}),
+spoon:F(100,28,p=>{Q(p,0,14,64,14,5);E(p,82,14,18,12)}),
+fork:F(100,28,p=>{Q(p,0,14,60,14,5);p.rect(60,2,6,24);[2,9,16,23].forEach(y=>p.rect(64,y,36,3))}),
+racket:F(100,34,p=>{Q(p,0,17,44,17,5);E(p,72,17,28,16);p.moveTo(92,17);p.ellipse(72,17,20,11,0,0,TAU,true)}),
+broom:T('M0,18H66V22H0Z M64,14L100,2L100,38L64,26Z',100,40),
+golf:T('M0,4H88V8H0Z M84,2L100,2L100,20L90,22Z',100,24),
+pliers:F(100,50,p=>{QS(p,[[0,14,50,26],[0,36,50,24],[52,24,100,12],[52,26,100,40]],8);circ(p,50,25,6)}),
+pisa:F(84,200,p=>{const b=new Path2D();b.rect(24,20,34,180);[40,70,100,130,160].forEach(y=>b.rect(20,y,42,4));b.rect(30,4,22,16);p.addPath(b,new DOMMatrix([1,0,-.1,1,20,0]))}),
+liberty:F(100,200,p=>{p.addPath(new Path2D('M36,150L40,70L56,70L64,150Z'));p.rect(30,150,40,50);p.rect(30,72,12,20);circ(p,48,54,8);Q(p,52,74,66,24,8);E(p,68,12,7,11);QS(p,[[48,50,36,38],[48,50,44,34],[48,50,52,34],[48,50,60,38]],3)}),
+moai:T('M22,200L18,120L10,64C6,30 16,4 40,4C64,4 74,30 70,64L62,120L58,200Z M14,64H66V72H14Z',80,200),
+taj:T('M50,0C58,10 64,20 64,34L62,40L38,40L36,34C36,20 42,10 50,0Z M28,40H72V100H28Z M6,40H16V100H6Z M84,40H94V100H84Z M6,32L11,20L16,32Z M84,32L89,20L94,32Z',100,100),
+pagoda:F(100,200,p=>{for(let i=0;i<5;i++){const y=20+i*36,w=18+i*8;p.addPath(new Path2D(`M${50-w},${y+10}L${50-w*.7},${y}L${50+w*.7},${y}L${50+w},${y+10}Z`));p.rect(50-w*.55,y+10,w*1.1,24)}Q(p,50,20,50,0,3)}),
+christ:F(100,200,p=>{p.addPath(new Path2D('M40,160L44,60L10,44L10,36L44,42L44,34L56,34L56,42L90,36L90,44L56,60L60,160Z'));circ(p,50,22,10);p.rect(20,160,60,40)}),
+crane:F(100,200,p=>{Q(p,30,200,30,20,8);QS(p,[[0,16,100,16]],6);p.rect(22,6,16,20);Q(p,84,16,84,60,1.5);p.rect(80,60,8,10)}),
+pole:F(100,200,p=>{Q(p,50,200,50,0,8);QS(p,[[10,20,90,20],[20,50,80,50]],5)}),
+harp:T('M8,100L8,54C8,20 36,4 68,6C88,8 96,18 90,30L46,96L46,100Z',100,100),
+swing:F(100,100,p=>{QS(p,[[10,100,50,6],[90,100,50,6]],6);QS(p,[[36,10,36,74],[64,10,64,74]],1.5);p.rect(28,74,44,5)}),
+slide:F(100,100,p=>{QS(p,[[14,100,14,20],[24,100,24,20]],5);p.addPath(new Path2D('M20,20L34,14L100,90L100,100L90,100Z'));[40,60,80].forEach(y=>p.rect(10,y,18,3));p.rect(8,16,30,4)}),
+kite:F(100,150,p=>{p.addPath(new Path2D('M50,0L84,44L50,110L16,44Z'));QS(p,[[50,110,44,130],[44,130,56,150]],2)}),
+shuttle:F(60,100,p=>{p.addPath(new Path2D('M2,0L58,0L40,70L20,70Z'));E(p,30,84,14,14)}),
+top:T('M46,0H54V12C80,12 96,30 96,44C96,52 72,60 60,84L50,100L40,84C28,60 4,52 4,44C4,30 20,12 46,12Z',100,100),
+sling:F(100,100,p=>{Q(p,50,100,50,50,12);QS(p,[[50,50,18,8],[50,50,82,8]],10)}),
+iron:T('M4,50C4,24 26,12 60,10L92,30C100,36 98,44 98,50Z',100,50,p=>HL(p,32,20,40,12)),
+ladder:F(60,200,p=>{QS(p,[[8,200,8,0],[52,200,52,0]],5);for(let y=14;y<200;y+=24)p.rect(8,y,44,4)}),
+shades:F(100,40,p=>{E(p,26,22,22,15);E(p,74,22,22,15);Q(p,44,16,56,16,4)}),
+glove:T('M10,30C10,6 60,0 84,10C96,16 98,40 90,54L90,70L30,70L30,54C14,50 10,44 10,30Z',100,70,p=>E(p,20,44,14,10)),
+phones:F(100,90,p=>{p.addPath(new Path2D('M8,60C8,10 92,10 92,60L82,60C82,22 18,22 18,60Z'));p.rect(2,50,20,38);p.rect(78,50,20,38)}),
+link:F(100,60,p=>{E(p,50,30,50,30);p.moveTo(90,30);p.ellipse(50,30,40,20,0,0,TAU,true)}),
+bowl:T('M4,10H96C96,40 80,56 50,56C20,56 4,40 4,10Z M30,54H70V60H30Z',100,60),
+balloon:F(60,100,p=>{E(p,30,32,26,32);p.addPath(new Path2D('M26,64L34,64L30,70Z'));QS(p,[[30,70,26,84],[26,84,34,98]],1.5)}),
+lantern:F(60,100,p=>{p.rect(16,0,28,6);E(p,30,42,28,34);p.rect(16,76,28,6);Q(p,30,82,30,98,2)}),
+conehat:T('M2,44L50,4L98,44Q50,54 2,44Z',100,50),
+pillow:T('M4,10Q10,4 20,8L80,8Q90,4 96,10Q100,20 96,30Q90,36 80,32L20,32Q10,36 4,30Q0,20 4,10Z',100,36),
+gamepad:T('M20,10L80,10C92,10 98,30 98,50C98,64 90,68 82,60L70,46L30,46L18,60C10,68 2,64 2,50C2,30 8,10 20,10Z',100,68,p=>{HL(p,16,20,14,4);HL(p,21,15,4,14);circ(p,76,24,3.5,1);circ(p,84,32,3.5,1)}),
+rock:T('M6,30C4,10 30,2 50,8C70,0 98,10 96,32C100,50 70,58 50,54C30,60 8,52 6,30Z',100,60),
+mola:T('M50,14L62,0L74,20Z M50,86L74,80L62,100Z',100,100,p=>{E(p,50,50,38,36);p.rect(86,30,12,40)}),
+mic:T('M12,44H38L32,96H18Z',50,100,p=>E(p,25,22,20,22)),
+gas:T('M12,20C12,8 48,8 48,20V92Q48,98 42,98H18Q12,98 12,92Z M22,4H38V12H22Z M14,0H46V4H14Z',60,98),
+goblet:T('M4,4H76C76,30 60,44 52,60L50,80H72V96H8V80H30L28,60C20,44 4,30 4,4Z',80,96),
+barrel:T('M14,4H66C80,20 80,60 66,76H14C0,60 0,20 14,4Z',80,80),
+kettle:T('M20,30C20,16 76,16 76,30L88,90H8Z M42,8H54V16H42Z M78,40L100,24L100,32L80,50Z',100,90)});
+MAPS.push([/^Wortel/,'carrot'],[/^Terong/,'eggplant'],[/^Cabai/,'chili'],[/^Jagung Bakar/,'corn'],[/^Buah Anggur/,'grapes'],[/^Durian/,'durian'],[/^Croissant/,'croissant'],[/^Sate/,'satay'],[/^(Sampan|Perahu)/,'canoe'],[/Pinisi|Viking|Yacht/,'sail'],[/^Ever Given/,'cargo'],[/^(Wonder|Kapal Feri|Titanic)/,'cruise'],[/^Kapal Induk/,'carrier'],[/^(Cargo Van|Angkot|Ambulans|Odong)/,'van'],[/^Obeng/,'screwdriver'],[/^Gergaji/,'saw'],[/^Kapak/,'axe'],[/^Paku/,'nail'],[/^Sekrup/,'screw'],[/^Anak Panah/,'arrow'],[/^Sendok/,'spoon'],[/^Garpu/,'fork'],[/^Raket/,'racket'],[/^Sapu/,'broom'],[/^(Stik Golf|Putter)/,'golf'],[/^Tang /,'pliers'],[/Pisa/,'pisa'],[/^Patung Liberty/,'liberty'],[/Moai/,'moai'],[/^Taj/,'taj'],[/^Pagoda/,'pagoda'],[/Kristus/,'christ'],[/^Kran/,'crane'],[/^Tiang/,'pole'],[/^Harpa/,'harp'],[/^Ayunan Taman/,'swing'],[/^Perosotan/,'slide'],[/^Layang/,'kite'],[/^Kok/,'shuttle'],[/^Gasing/,'top'],[/^Ketapel/,'sling'],[/^Setrika/,'iron'],[/^Tangga/,'ladder'],[/^Kacamata/,'shades'],[/^Sarung Tangan Tinju/,'glove'],[/^Headphone/,'phones'],[/^Mata Rantai/,'link'],[/^(Cobek|Ulekan|Mangkuk|Rice Cooker)/,'bowl'],[/^Balon/,'balloon'],[/^Lampion/,'lantern'],[/^Caping/,'conehat'],[/^Bantal/,'pillow'],[/^Gamepad/,'gamepad'],[/^(Batu|Komet|Phobos|Amoeba)/,'rock'],[/^Ikan Mola/,'mola'],[/^(Biji Beras|Biji Wijen)/,'lemon'],[/^Mikrofon/,'mic'],[/^Tabung Elpiji/,'gas'],[/^(Djembe|Tifa)/,'goblet'],[/^Bedug/,'barrel'],[/^(Cerek|Teko)/,'kettle']);
+/* instruments, devices, buildings, rings */
+const RR=(p,x,y,w,h,r)=>p.roundRect(x,y,w,h,r);
+Object.assign(TPL,{
+violin:F(100,46,p=>{E(p,72,23,24,22);E(p,46,23,17,16);Q(p,40,23,4,23,5);circ(p,4,23,5)}),
+piano:F(100,70,p=>{p.addPath(new Path2D('M0,10Q0,4 8,4H62C84,4 98,14 100,30V38H0Z'));p.rect(0,38,70,6);p.rect(6,44,5,26);p.rect(64,44,5,26);p.rect(90,38,5,32)}),
+xylo:F(100,50,p=>{for(let i=0;i<10;i++)p.rect(i*10,4+i*1.5,8,42-i*3);Q(p,0,46,100,46,3)}),
+harmonica:T('M0,0H100V40H0Z',100,40,p=>{for(let i=0;i<10;i++)HL(p,4+i*9.6,12,6,16)}),
+synth:T('M0,0H100V28H0Z',100,28,p=>{for(let i=0;i<20;i++)HL(p,2+i*4.9,12,3.6,14)}),
+phone:F(50,100,p=>{RR(p,0,0,50,100,8);circ(p,10,10,4,1);HL(p,20,6,14,3)}),
+tablet:F(70,100,p=>{RR(p,0,0,70,100,6);circ(p,35,6,2.5,1)}),
+camera:F(100,70,p=>{RR(p,0,14,100,56,6);p.addPath(new Path2D('M34,14L42,2L62,2L70,14Z'));circ(p,50,44,22,1);circ(p,50,44,14);circ(p,50,44,8,1)}),
+router:F(100,50,p=>{RR(p,0,26,100,24,3);QS(p,[[16,26,16,0],[50,26,50,0],[84,26,84,0]],4)}),
+microwave:F(100,64,p=>{RR(p,0,0,100,64,4);HL(p,8,8,62,48);circ(p,84,20,6,1);circ(p,84,42,4,1)}),
+washer:F(100,100,p=>{RR(p,0,0,100,100,6);circ(p,50,58,32,1);circ(p,50,58,24);HL(p,8,8,50,14)}),
+fridge:F(50,100,p=>{RR(p,0,0,50,100,4);HL(p,2,36,46,2);HL(p,8,44,3,20);HL(p,8,14,3,16)}),
+wardrobe:F(67,100,p=>{p.rect(0,0,67,96);p.rect(4,96,6,4);p.rect(57,96,6,4);HL(p,22,4,2,88);HL(p,44,4,2,88);HL(p,17,44,3,10);HL(p,47,44,3,10)}),
+bookcase:F(50,100,p=>{p.rect(0,0,50,100);for(let i=0;i<5;i++)HL(p,4,4+i*19,42,15)}),
+suitcase:F(70,100,p=>{RR(p,0,14,70,86,8);p.addPath(new Path2D('M22,14V6Q22,2 26,2H44Q48,2 48,6V14H42V8H28V14Z'))}),
+tote:T('M10,36H90L96,100H4Z M28,36V16C28,-6 72,-6 72,16V36H64V16C64,6 36,6 36,16V36Z',100,100),
+skate:F(100,26,p=>{RR(p,0,2,100,10,5);circ(p,22,19,6);circ(p,78,19,6)}),
+goal:T('M0,0H100V40H0Z',100,40,p=>HL(p,4,4,92,36)),
+board8:T('M0,0H100V100H0Z',100,100,p=>{for(let i=0;i<8;i++)for(let j=0;j<8;j++)if((i+j)%2)HL(p,i*12.5,j*12.5,12.5,12.5)}),
+cube:T('M0,0H100V100H0Z',100,100,p=>{[33,66].forEach(v=>{HL(p,v-1.5,4,3,92);HL(p,4,v-1.5,92,3)})}),
+die:F(100,100,p=>{RR(p,0,0,100,100,16);[[28,28],[72,28],[50,50],[28,72],[72,72]].forEach(([x,y])=>circ(p,x,y,8,1))}),
+house:F(100,80,p=>{p.addPath(new Path2D('M0,38L50,4L100,38Z'));p.rect(10,36,80,44);HL(p,44,52,14,28);HL(p,18,46,16,14);HL(p,66,46,16,14)}),
+house2:F(100,100,p=>{p.addPath(new Path2D('M0,34L50,2L100,34Z'));p.rect(10,32,80,68);HL(p,42,72,16,28);[[18,42],[66,42],[18,72],[66,72]].forEach(([x,y])=>HL(p,x,y,16,16))}),
+shop:F(100,70,p=>{p.rect(4,20,92,50);p.rect(0,10,100,12);HL(p,10,32,50,28);HL(p,68,32,20,38)}),
+canopy:F(100,70,p=>{p.rect(0,0,100,14);p.rect(12,14,6,56);p.rect(82,14,6,56);p.rect(36,44,8,26);p.rect(56,44,8,26)}),
+temple:F(100,60,p=>{p.addPath(new Path2D('M0,14L50,0L100,14Z'));p.rect(0,14,100,6);for(let i=0;i<8;i++)p.rect(6+i*12,20,6,34);p.rect(0,54,100,6)}),
+bridge:F(200,40,p=>{p.rect(0,26,200,4);p.rect(50,0,4,30);p.rect(146,0,4,30);QS(p,[[52,2,0,26],[52,2,100,26],[148,2,100,26],[148,2,200,26]],1.5)}),
+sphinx:F(100,34,p=>{E(p,62,24,36,10);p.rect(2,22,50,10);circ(p,18,12,7);p.addPath(new Path2D('M8,10L18,0L28,10L30,24L6,24Z'))}),
+iss:F(100,50,p=>{Q(p,0,25,100,25,3);p.rect(4,2,14,20);p.rect(4,28,14,20);p.rect(82,2,14,20);p.rect(82,28,14,20);p.rect(40,19,20,12)}),
+hubble:F(100,40,p=>{RR(p,20,10,60,20,4);p.rect(4,0,10,40);p.rect(86,0,10,40)}),
+jwst:T('M0,60L20,36L80,36L100,60L50,66Z M38,4L62,4L74,18L62,32L38,32L26,18Z',100,66),
+hydrant:T('M18,10Q30,0 42,10V20H52V32L58,34V50L52,52V62H56V84H60V100H0V84H4V62H8V52L2,50V34L8,32V20H18Z',60,100),
+tlight:F(30,100,p=>{RR(p,0,0,30,100,6);[20,50,80].forEach(y=>circ(p,15,y,9,1))}),
+pillar:T('M8,100V24C8,2 42,2 42,24V100Z M4,96H46V100H4Z',50,100,p=>HL(p,16,34,18,3)),
+kiosk:T('M0,100V10Q0,0 10,0H30Q40,0 40,10V100Z',40,100,p=>{for(let i=0;i<3;i++)for(let j=0;j<2;j++)HL(p,5+j*15,10+i*22,12,18)}),
+bins:F(100,50,p=>{[0,34,68].forEach(x=>{RR(p,x,8,30,42,3);p.rect(x-2,2,34,6)})}),
+drill:F(100,70,p=>{RR(p,30,10,52,26,6);p.rect(82,16,12,14);Q(p,94,23,100,23,3);p.addPath(new Path2D('M40,36H62L56,70H38Z'))}),
+lock:T('M18,44V28C18,-2 52,-2 52,28V44H44V28C44,12 26,12 26,28V44Z',70,96,p=>p.rect(4,44,62,52)),
+key:F(100,40,p=>{RG(p,20,20,18,7);p.rect(36,17,62,6);p.rect(80,23,6,10);p.rect(90,23,6,8)}),
+jerry:T('M0,20L14,6H36V0H52V6H70Q80,6 80,16V100H0Z',80,100,p=>HL(p,10,24,22,14)),
+board:F(100,70,p=>{RR(p,0,0,100,70,8);circ(p,88,35,5,1)}),
+pan:F(140,100,p=>{circ(p,50,50,50);Q(p,90,50,140,50,12)}),
+pot:F(100,70,p=>{RR(p,10,16,80,54,4);p.rect(30,8,40,8);p.rect(44,0,12,8);p.rect(0,24,10,8);p.rect(90,24,10,8)}),
+dish:T('M4,10C50,20 84,50 96,70C40,76 10,60 4,10Z M46,72H54V98H46Z',100,98),
+fan:F(100,100,p=>{for(let i=0;i<3;i++){const a=i*2.0944,x=50+Math.cos(a)*24,y=50+Math.sin(a)*24,rx=26,ry=11;p.moveTo(x+rx*Math.cos(a),y+rx*Math.sin(a));p.ellipse(x,y,rx,ry,a,0,TAU)}circ(p,50,50,8)}),
+wheel:F(100,100,p=>{RG(p,50,50,50,5);for(let i=0;i<4;i++){const a=i*Math.PI/4;Q(p,50-Math.cos(a)*46,50-Math.sin(a)*46,50+Math.cos(a)*46,50+Math.sin(a)*46,4)}}),
+ring:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,36,1)}),
+donut:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,16,1)}),
+target:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,42,1);circ(p,50,50,34);circ(p,50,50,26,1);circ(p,50,50,18);circ(p,50,50,10,1)}),
+apple:F(100,100,p=>{p.addPath(new Path2D('M50,22C62,10 90,12 94,42C98,72 76,98 62,96C56,95 54,92 50,92C46,92 44,95 38,96C24,98 2,72 6,42C10,12 38,10 50,22Z'));Q(p,50,22,54,4,4)}),
+burger:F(100,70,p=>{p.addPath(new Path2D('M6,32C6,6 94,6 94,32Z M6,52H94C94,66 90,70 80,70H20C10,70 6,66 6,52Z'));p.rect(2,36,96,12)}),
+bball:F(100,100,p=>{circ(p,50,50,50);HL(p,48,2,4,96);HL(p,2,48,96,4);circ(p,-8,50,50,1)}),
+bowl8:F(100,100,p=>{circ(p,50,50,50);circ(p,40,28,4,1);circ(p,54,26,4,1);circ(p,48,40,4,1)}),
+watch:T('M12,0L28,0L30,26L10,26Z M4,30H36V70H4Z M10,74L30,74L28,100L12,100Z',40,100),
+aa:T('M0,0H92V30H0Z M92,9H100V21H92Z',100,30),
+usb:T('M0,6H24V24H0Z M24,0H100V30H24Z',100,30),
+chip:T('M0,0H74L100,22V71H0Z',100,71),
+dryer:T('M0,10H70C90,10 96,20 96,28C96,36 90,44 70,44H0Z M48,42H68L60,70H42Z',100,70)});
+MAPS.push([/^(Biola|Viola|Cello|Double Bass)/,'violin'],[/^Grand Piano/,'piano'],[/^Xylophone/,'xylo'],[/^Harmonika/,'harmonica'],[/^Synthesizer/,'synth'],[/^Smartphone/,'phone'],[/^Tablet/,'tablet'],[/^Kamera/,'camera'],[/^Router/,'router'],[/^Microwave/,'microwave'],[/^Mesin Cuci/,'washer'],[/^Kulkas/,'fridge'],[/^Lemari 3/,'wardrobe'],[/^Rak Buku/,'bookcase'],[/^Koper/,'suitcase'],[/^Tas Tote/,'tote'],[/^Skateboard/,'skate'],[/^Gawang/,'goal'],[/^Papan Catur/,'board8'],[/^Rubik/,'cube'],[/^Dadu/,'die'],[/^Rumah Tipe/,'house'],[/^Rumah 2/,'house2'],[/^(Minimarket|Pos |Halte)/,'shop'],[/^(SPBU|Gerbang Tol)/,'canopy'],[/^Parthenon/,'temple'],[/^Jembatan/,'bridge'],[/^Sphinx/,'sphinx'],[/^Stasiun Luar/,'iss'],[/^Teleskop Hubble/,'hubble'],[/^Perisai JWST/,'jwst'],[/^Hidran/,'hydrant'],[/^Lampu Lalu/,'tlight'],[/^Kotak Pos/,'pillar'],[/^Telepon Umum/,'kiosk'],[/^Tempat Sampah/,'bins'],[/^Bor Listrik/,'drill'],[/^Gembok/,'lock'],[/^Kunci Rumah/,'key'],[/^Jerigen/,'jerry'],[/^Talenan/,'board'],[/^Wajan/,'pan'],[/^Panci/,'pot'],[/^Antena Parabola/,'dish'],[/^(Kipas Mini|Kipas Angin Langit|Baling)/,'fan'],[/^Kincir Air/,'wheel'],[/^(Cincin Kawin|Gelang|Cincin Senam|Ring Basket)/,'ring'],[/^Donat/,'donut'],[/^Papan Panahan/,'target'],[/^Apel/,'apple'],[/^Burger/,'burger'],[/^Bola Basket/,'bball'],[/^Bola Bowling/,'bowl8'],[/^Smartwatch/,'watch'],[/^Baterai AA/,'aa'],[/^Flashdisk/,'usb'],[/^Kartu (SIM|MicroSD)/,'chip'],[/^Hair Dryer/,'dryer']);
+
+/* simple-geometry templates */
+Object.assign(TPL,{
+card:F(71,100,p=>{p.roundRect(0,0,71,100,7);HL(p,7,7,7,12);HL(p,57,81,7,12);circ(p,35.5,50,14,1)}),
+domino:F(100,50,p=>{p.roundRect(0,0,100,50,6);HL(p,47,5,6,40);[[16,14],[34,36]].concat([[64,14],[84,14],[64,36],[84,36]]).forEach(([x,y])=>circ(p,x,y,4.5,1))}),
+dice:F(100,100,p=>{p.roundRect(0,0,100,100,16);[[26,26],[74,26],[26,74],[74,74],[50,50]].forEach(([x,y])=>circ(p,x,y,8,1))}),
+coin:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,41,1);circ(p,50,50,31)})
+});
+
+Object.assign(TPL,{
+spoon:F(100,30,p=>{E(p,82,15,18,13);Q(p,4,15,66,15,7)}),
+fork:F(100,30,p=>{Q(p,4,15,66,15,6);[3,10,17,24].forEach(y=>Q(p,62,y+2,98,y+2,4));Q(p,62,4,62,26,5)}),
+key:F(100,40,p=>{RG(p,20,20,18,7);Q(p,36,20,98,20,7);Q(p,72,20,72,34,6);Q(p,86,20,86,30,6)}),
+glasses:F(100,36,p=>{RG(p,24,20,18,4);RG(p,76,20,18,4);Q(p,40,16,60,16,4);Q(p,0,14,8,14,3)}),
+padlock:F(70,100,p=>{RG(p,35,32,24,8);p.roundRect(6,50,58,48,6);circ(p,35,70,6,1)}),
+pan:F(100,36,p=>{E(p,34,20,32,16);Q(p,62,18,100,18,8)}),
+pot:F(100,70,p=>{p.roundRect(14,10,72,60,6);p.rect(0,20,14,8);p.rect(86,20,14,8);p.rect(36,2,28,8)}),
+comb:T('M0,0H100V24H0Z',100,24,p=>{for(let i=0;i<14;i++)HL(p,4+i*7,12,4,10)}),
+battery:F(100,40,p=>{p.roundRect(0,0,92,40,5);p.rect(92,13,8,14)}),
+headphone:F(100,90,p=>{RG(p,50,50,44,7);p.roundRect(0,50,20,36,8);p.roundRect(80,50,20,36,8)}),
+hanger:F(100,60,p=>{Q(p,50,22,4,54,4);Q(p,50,22,96,54,4);Q(p,4,54,96,54,4);RG(p,50,12,9,4)}),
+saw:F(100,30,p=>{Q(p,0,14,74,14,12);Q(p,74,14,100,14,9)}),
+banana:T('M4,20C30,60 70,60 98,8L92,4C68,44 34,44 6,10Z',100,62),
+book:F(70,100,p=>{p.rect(0,0,70,100);HL(p,8,0,3,100)}),
+bowl:T('M2,10H98C96,50 76,68 50,68C24,68 4,50 2,10Z',100,68),
+wine:F(60,100,p=>p.addPath(new Path2D('M8,4H52C52,40 44,52 34,54L34,88H46V98H14V88H26V54C16,52 8,40 8,4Z'))),
+ring:F(100,100,p=>RG(p,50,50,50,16))
+});
+MAPS.unshift([/^Gelas (Wine|Anggur)/,'wine','h'],[/^(Buku|Kamus|Novel|Komik|Majalah|Modul)/,'book','h'],[/^(Mangkuk|Baskom|Cobek)/,'bowl'],[/^Sendok (Makan|Teh|Sup)/,'spoon'],[/^Garpu/,'fork'],[/^(Kunci (Rumah|T|Slot))/,'key'],[/^Kacamata (Baca|Polarized)/,'glasses'],[/^Gembok/,'padlock','h'],[/^Wajan/,'pan'],[/^Panci/,'pot'],[/^Sisir/,'comb'],[/^(Baterai|Aki)/,'battery'],[/Hanger|Gantungan Baju/,'hanger'],[/^Gergaji/,'saw'],[/^(Cincin|Gym Rings)/,'ring']);
+
+Object.assign(TPL,{
+can:F(60,100,p=>{p.roundRect(0,0,60,100,6);HL(p,4,12,52,3)}),
+jar:F(70,100,p=>{p.rect(10,0,50,14);p.roundRect(0,16,70,84,10)}),
+pen:F(100,10,p=>{p.roundRect(0,0,80,10,3);p.addPath(new Path2D('M80,1L100,5L80,9Z'))}),
+dumb:F(100,40,p=>{p.roundRect(0,0,22,40,5);p.roundRect(78,0,22,40,5);Q(p,22,20,78,20,10)}),
+cd:F(100,100,p=>{circ(p,50,50,50);circ(p,50,50,14,1)}),
+bucket:F(100,100,p=>{p.addPath(new Path2D('M8,22H92L78,100H22Z'));p.addPath(new Path2D('M8,22C8,-6 92,-6 92,22L86,22C86,4 14,4 14,22Z'))}),
+trophy:F(60,100,p=>p.addPath(new Path2D('M8,4H52C52,30 44,44 34,46L34,70H46V92H14V70H26V46C16,44 8,30 8,4Z'))),
+pistol:F(100,70,p=>{p.roundRect(0,0,100,26,4);Q(p,30,26,22,70,20)}),
+drone:F(100,40,p=>{p.roundRect(36,14,28,16,4);E(p,6,8,16,4);E(p,94,8,16,4);Q(p,36,18,6,10,3);Q(p,64,18,94,10,3)}),
+button:F(100,100,p=>{circ(p,50,50,50);[[34,34],[66,34],[34,66],[66,66]].forEach(([x,y])=>circ(p,x,y,7,1))})
+});
+MAPS.unshift([/^Kaleng/,'can','h'],[/^(Pulpen|Pensil|Pena|Spidol)/,'pen'],[/^Dumbbell/,'dumb'],[/^CD/,'cd'],[/^Ember/,'bucket'],[/^Piala/,'trophy','h'],[/Pistol/,'pistol'],[/Drone|Propeller/,'drone'],[/^Toples/,'jar','h'],[/^Kancing/,'button'],[/^(Piring|Asbak)/,'coin'],[/^Kipas/,'fan'],[/^Payung/,'umbrella'],[/^(Celana|Jaket|Kutang)/,'tshirt'],[/^Kunci (Pipa|Sok|L|Bintang)/,'wrench'],[/^Tang/,'scissors'],[/^Sendok Garpu/,'fork']);
+
+Object.assign(TPL,{
+teko:F(100,80,p=>{E(p,42,50,36,28);p.rect(30,12,24,8);Q(p,72,44,98,20,7);Q(p,8,36,6,62,5)}),
+pill:F(100,36,p=>p.roundRect(0,0,100,36,18)),
+pillow:F(100,64,p=>p.roundRect(0,0,100,64,24)),
+sack:T('M10,0H90L100,20V100H0V20Z',100,100,p=>{HL(p,30,36,40,30)}),
+spray:F(60,100,p=>{p.roundRect(8,40,44,60,8);p.rect(22,24,16,16);p.rect(18,14,40,10);Q(p,58,14,58,30,4)})
+});
+MAPS.unshift([/^Teko/,'teko'],[/^(Guling|Gulungan)/,'pill'],[/^Bantal/,'pillow'],[/^(Semen Bag|Karung|Kantong Semen)/,'sack','h'],[/Semprotan/,'spray','h']);
+
+Object.assign(TPL,{
+mic:F(40,100,p=>{E(p,20,20,18,20);Q(p,20,36,20,100,10)}),
+torch:F(100,36,p=>{p.roundRect(0,8,70,20,4);p.addPath(new Path2D('M70,4L100,0V36L70,32Z'))}),
+guitar:F(100,36,p=>{E(p,30,18,28,17);E(p,54,18,14,11);Q(p,60,18,100,18,6)}),
+spat:F(100,30,p=>{p.roundRect(0,4,30,22,4);Q(p,30,15,100,15,6)}),
+tube:F(100,30,p=>{p.roundRect(0,0,82,30,6);p.rect(82,9,18,12)}),
+bag:F(100,80,p=>{p.roundRect(0,18,100,62,10);Q(p,32,18,32,6,5);Q(p,68,18,68,6,5);Q(p,32,6,68,6,5)})
+});
+MAPS.unshift([/Microphone/,'mic','h'],[/Senter/,'torch'],[/^(Gitar|Ukulele|Mandolin)/,'guitar'],[/^(Sutil|Centong)/,'spat'],[/Tube/,'tube'],[/^(Koper|Tas (Gym|Carrier|Daypack))/,'bag']);
+
+/* refined silhouettes (override) */
+const EH=(p,x,y,rx,ry)=>{p.moveTo(x+rx,y);p.ellipse(x,y,rx,ry,0,0,TAU,true)};
+Object.assign(TPL,{
+bottle:T('M15,0H25V6H27V26C27,34 36,42 36,54V96Q36,100 32,100H8Q4,100 4,96V54C4,42 13,34 13,26V6H15Z',40,100,p=>HL(p,10,58,20,24)),
+card:F(71,100,p=>{p.roundRect(0,0,71,100,7);HL(p,6,7,6,10);HL(p,59,83,6,10);p.moveTo(35.5,28);p.lineTo(21,50);p.lineTo(35.5,72);p.lineTo(50,50);p.closePath()}),
+guitar:F(100,36,p=>{E(p,26,18,26,17);E(p,52,18,16,11);Q(p,62,18,94,18,5);p.roundRect(92,10,8,16,2);circ(p,28,18,6,1)}),
+teko:F(100,80,p=>{E(p,42,54,34,26);p.roundRect(28,22,28,8,3);circ(p,42,16,5);Q(p,70,50,96,22,7);RG(p,8,50,14,5)}),
+trophy:F(100,100,p=>{p.addPath(new Path2D('M26,4H74C74,34 64,48 54,50L54,74H68V90H32V74H46V50C36,48 26,34 26,4Z'));RG(p,20,24,14,5);RG(p,80,24,14,5)}),
+bowl:T('M2,8H98C96,44 78,62 62,64L62,68H38L38,64C22,62 4,44 2,8Z',100,68),
+pot:F(100,70,p=>{p.roundRect(14,14,72,56,6);p.roundRect(10,8,80,8,3);circ(p,50,4,4);p.rect(0,24,14,8);p.rect(86,24,14,8)}),
+pan:F(100,36,p=>{E(p,34,20,32,16);EH(p,34,20,25,11);Q(p,62,18,100,18,8)})
+});
+
+Object.assign(TPL,{
+stupa:F(100,62,p=>{p.rect(0,50,100,12);p.rect(8,40,84,10);p.rect(16,30,68,10);p.rect(24,22,52,8);for(let i=0;i<5;i++)E(p,22+i*14,20,6,5);E(p,50,12,11,11);Q(p,50,2,50,-2,2);p.rect(46,0,8,3);[[14,44],[86,44],[22,34],[78,34]].forEach(([x,y])=>E(p,x,y,4,3))}),
+eiffel:T('M2,100L24,44H36L58,100H50L30,58L10,100Z M24,44L28,10H32L36,44Z M20,42H40V47H20Z M29,10L30,0L31,10Z',60,100),
+spire:T('M22,100L29,34L34,12L38,0L42,12L47,34L54,100Z',76,100,p=>{p.rect(24,60,22,3)}),
+monas:F(50,100,p=>{p.rect(0,92,50,8);p.rect(6,84,38,8);p.addPath(new Path2D('M21,84L22,18H28L29,84Z'));p.rect(14,14,22,5);E(p,25,8,5,7)}),
+light:F(40,100,p=>{p.addPath(new Path2D('M8,100L14,30H26L32,100Z'));p.rect(8,24,24,6);p.rect(13,10,14,14);p.addPath(new Path2D('M11,10L20,0L29,10Z'));HL(p,17,14,6,7);p.rect(17,50,6,10)}),
+palm:F(100,100,p=>{Q(p,50,100,54,28,6);[[54,28,6,14],[54,28,22,4],[54,28,90,10],[54,28,98,32],[54,28,4,38],[54,28,60,2]].forEach(v=>Q(p,...v,4));E(p,54,28,6,6)})
+});
+MAPS.unshift([/Borobudur|^Candi|^Stupa/,'stupa'],[/Eiffel/,'eiffel','h'],[/Sky Tower|Burj|Petronas/,'spire','h'],[/Monas|Monumen Nasional/,'monas','h'],[/Mercusuar/,'light','h'],[/^Pohon (Kelapa|Palem|Kurma)/,'palm','h']);
+
+Object.assign(TPL,{
+envelope:T('M0,0H100V60H0Z M4,6L4,9L50,40L96,9L96,6L50,36Z',100,60),
+cal:F(70,100,p=>{p.rect(0,0,70,100);HL(p,5,4,60,14);for(let r=0;r<4;r++)for(let c=0;c<5;c++)HL(p,6+c*12,26+r*17,9,12)}),
+hour:F(50,100,p=>{p.rect(0,0,50,6);p.rect(0,94,50,6);p.addPath(new Path2D('M6,6H44C44,30 28,42 25,50C28,58 44,70 44,94H6C6,70 22,58 25,50C22,42 6,30 6,6Z'))}),
+carrot:T('M0,4C0,0 4,0 6,1L96,11L6,23C4,24 0,24 0,20Z',100,24),
+corn:F(40,100,p=>{E(p,20,54,14,44);p.addPath(new Path2D('M20,100L2,36Q10,30 20,42Q30,30 38,36Z'))}),
+chili:T('M0,12C30,2 70,0 94,12L100,22L86,22C60,22 28,24 0,12Z',100,24),
+trumpet:F(100,40,p=>{Q(p,0,20,60,20,5);p.addPath(new Path2D('M60,20L100,0V40Z'));RG(p,30,26,10,3)}),
+chop:F(100,12,p=>{Q(p,0,2,100,3,3);Q(p,0,9,100,9,3)}),
+bowtie:F(100,50,p=>{p.addPath(new Path2D('M0,4L42,22V28L0,46Z M100,4L58,22V28L100,46Z'));p.roundRect(40,18,20,14,3)}),
+mask:F(100,60,p=>{p.roundRect(14,4,72,52,10);RG(p,7,30,10,3);RG(p,93,30,10,3)}),
+zip:F(100,24,p=>{p.rect(0,4,100,16);for(let i=0;i<20;i++)HL(p,2+i*5,8,2.5,8);p.roundRect(84,0,14,24,4)}),
+poncho:T('M50,2C62,2 68,10 68,20L98,80H2L32,20C32,10 38,2 50,2Z',100,80),
+tri:T('M0,100V0L100,100Z M16,84L66,84L16,34Z',100,100),
+protr:T('M0,50A50,50 0 0 1 100,50V60H0Z M88,50A38,38 0 0 1 12,50Z',100,60),
+stapler:F(100,36,p=>{p.roundRect(0,14,100,22,4);p.addPath(new Path2D('M4,14L96,4L100,14Z'))}),
+glue:T('M14,0H26L30,22H36V96Q36,100 32,100H8Q4,100 4,96V22H10Z',40,100),
+calc:T('M0,0H60V100H0Z',60,100,p=>{HL(p,6,6,48,18);for(let r=0;r<5;r++)for(let c=0;c<4;c++)HL(p,6+c*12.5,32+r*13,9,9)}),
+cable:F(100,30,p=>{p.roundRect(0,10,14,10,2);Q(p,14,15,40,6,4);Q(p,40,6,60,24,4);Q(p,60,24,86,15,4);p.roundRect(86,8,14,14,2)}),
+sd:T('M0,14L14,0H70V100H0Z',70,100,p=>{for(let i=0;i<5;i++)HL(p,12+i*10,4,6,14)}),
+walkie:F(40,100,p=>{p.roundRect(2,22,36,78,5);p.rect(8,0,6,22);HL(p,8,30,24,14)}),
+solar:T('M0,0H100V62H0Z',100,62,p=>{for(let r=0;r<4;r++)for(let c=0;c<6;c++)HL(p,3+c*16,3+r*15,14,12)}),
+sbar:T('M0,0H100V16H0Z',100,16,p=>{for(let i=0;i<24;i++)HL(p,4+i*4,5,2,6)}),
+door:T('M0,0H46V100H0Z',46,100,p=>{HL(p,6,6,34,38);HL(p,6,52,34,42);circ(p,39,52,2,1)}),
+toilet:F(100,100,p=>{p.roundRect(0,0,34,60,4);p.addPath(new Path2D('M0,58H100C100,80 80,96 56,96V100H12V90C4,88 0,80 0,70Z'))}),
+pipe:F(100,14,p=>{p.rect(0,2,88,10);p.rect(88,0,12,14)}),
+rebar:F(100,10,p=>{p.rect(0,3,100,4);for(let i=0;i<25;i++)p.rect(i*4,0,2,10)}),
+drill:F(100,12,p=>{p.addPath(new Path2D('M0,6L14,1H60V11H14Z'));p.rect(60,3,40,6)}),
+crowbar:F(100,30,p=>{Q(p,0,22,80,10,5);p.addPath(new Path2D('M78,10Q92,8 100,22L94,24Q88,14 78,14Z'))}),
+basket:F(100,80,p=>{p.addPath(new Path2D('M0,24H100L88,80H12Z'));p.addPath(new Path2D('M12,24C12,-6 88,-6 88,24L82,24C82,6 18,6 18,24Z'));for(let i=0;i<6;i++)HL(p,10+i*14,34,8,36)}),
+paddle:F(100,100,p=>{E(p,50,38,44,36);Q(p,50,74,50,100,14)}),
+medal:F(60,100,p=>{p.addPath(new Path2D('M8,0H24L38,44H22Z'));p.addPath(new Path2D('M52,0H36L22,44H38Z'));circ(p,30,70,28);circ(p,30,70,20,1);circ(p,30,70,10)}),
+lego:T('M0,22H100V60H0Z',100,60,p=>{for(let i=0;i<4;i++)E(p,12.5+i*25,14,8,6)}),
+puzzle:F(100,100,p=>{p.rect(10,10,80,80);E(p,50,6,12,10);E(p,94,50,10,12);EH(p,6,50,10,12)}),
+tent:F(100,60,p=>{p.addPath(new Path2D('M0,60C0,20 30,2 50,2C70,2 100,20 100,60Z'));HL(p,38,30,24,30)}),
+sbag:F(100,40,p=>p.addPath(new Path2D('M0,14C0,6 10,2 22,2H78C92,2 100,10 100,20C100,30 92,38 78,38H22C10,38 0,34 0,26Z'))),
+choc:T('M0,0H100V40H0Z',100,40,p=>{for(let i=0;i<4;i++)for(let j=0;j<2;j++)HL(p,4+i*24,4+j*18,20,14)}),
+net:T('M0,0H100V70H0Z',100,70,p=>{for(let i=0;i<10;i++)for(let j=0;j<7;j++)HL(p,2+i*10,2+j*10,7,7)}),
+candle:F(30,100,p=>{p.rect(4,30,22,70);Q(p,15,30,15,18,2);E(p,15,10,6,10)}),
+lipstick:F(30,100,p=>{p.roundRect(2,50,26,50,3);p.roundRect(5,40,20,10,2);p.addPath(new Path2D('M7,40V20L23,8V40Z'))}),
+lighter:F(40,100,p=>{p.roundRect(0,26,40,74,6);p.rect(10,10,20,16);E(p,20,6,5,8)}),
+curtain:T('M0,0H100V100H0Z',100,100,p=>{for(let i=0;i<8;i++)HL(p,i*12.5+6,12,1.5,84)}),
+cloth:F(100,70,p=>{p.rect(0,0,100,62);for(let i=0;i<10;i++)p.rect(i*10+1,62,7,8)})
+});
+MAPS.unshift([/^Amplop/,'envelope'],[/^(Paspor|Buku Tabungan)/,'book','h'],[/^Kalender/,'cal','h'],[/^Sumpit/,'chop'],[/^Dasi/,'bowtie'],[/^Masker/,'mask'],[/^Ritsleting/,'zip'],[/^(Jas Hujan|Ponco)/,'poncho'],[/^Mistar Segitiga/,'tri'],[/^Busur/,'protr'],[/^Stapler/,'stapler'],[/^Lem (Cair|Stik)/,'glue','h'],[/^(Kalkulator|Remote)/,'calc','h'],[/^Kabel/,'cable'],[/^(Memory Card|Disket)/,'sd','h'],[/^Walkie/,'walkie','h'],[/^Panel Surya/,'solar'],[/^Soundbar/,'sbar'],[/^Pintu/,'door','h'],[/^Kloset Duduk/,'toilet'],[/^Pipa/,'pipe'],[/^Besi Beton/,'rebar'],[/^Mata Bor/,'drill'],[/^Linggis/,'crowbar'],[/^Keranjang/,'basket'],[/^Bet /,'paddle','h'],[/^Medali/,'medal','h'],[/^Lego/,'lego'],[/^Puzzle/,'puzzle'],[/^Barbell/,'cd'],[/^Tenda/,'tent'],[/^Sleeping Bag/,'sbag'],[/^Cokelat/,'choc'],[/^Sosis/,'pill'],[/^(Semangka|Melon)/,'egg'],[/^Timun/,'pill'],[/^(Jaring|Net )/,'net'],[/^Lilin/,'candle','h'],[/^Lipstik/,'lipstick','h'],[/^Korek Api Gas/,'lighter','h'],[/^Gorden/,'curtain'],[/^(Handuk|Sajadah|Taplak)/,'cloth'],[/^Terompet/,'trumpet'],[/^Kompas/,'coin']);
+function mk(e){
+ if(e.path){e.ref0=e.ref;return e}
+ const mp=e.lock?0:MAPS.find(x=>x[0].test(e.n));if(mp){e.t=mp[1];e.ar=0;delete e.from;if(mp[2])e.dim=mp[2]}
+ let b;if(e.from!==undefined){const s=OBJ[e.from];b=[s.path(),s.bw,s.bh]}else b=TPL[e.t]();
+ const bw=b[1],bh=e.ar?bw/e.ar:b[2],m=new DOMMatrix().scale(1,bh/b[2]);
+ return{...e,bw,bh,path:()=>{const p=new Path2D();p.addPath(b[0],m);return p}}
+}
+const REFS=[{n:'Kartu ATM',w:8.56,h:5.4,t:'r'},{n:'Kartu Remi',w:6.35,h:8.89,t:'card'},{n:'Domino',w:4.8,h:2.4,t:'domino'},{n:'Dadu',w:1.6,h:1.6,t:'dice'},{n:'Smartphone',w:7.2,h:15,t:'phone'},{n:'Botol Air 600 ml',w:6.5,h:21,t:'bottle'},{n:'Mug Keramik',w:9,h:9,t:'mug'},{n:'Sepatu Sneaker',w:28,h:11,t:'shoe'},{n:'Kertas A4',w:21,h:29.7,t:'r'},{n:'Laptop 14"',w:32,h:21,t:'laptop'},{n:'Gitar/Biola',w:60,h:22,t:'violin'},{n:'Pintu Rumah',w:90,h:203,t:'r'},{n:'Orang Dewasa',w:50,h:170,t:'person'},{n:'Sepeda',w:175,h:98,t:'bike'},{n:'Bus Kota',w:1200,h:366,t:'bus'},{n:'Pesawat A320',w:3760,h:2256,t:'plane'},{n:'Menara Jam',w:4800,h:9600,t:'tower'}];
+const cmf=v=>v<1e5?(+v.toPrecision(3)).toLocaleString('en')+' cm':fmt(v);
+function pickRef(o){const M=r=>Math.max(r.w,r.h),ok=REFS.filter(r=>{const q=o.L/M(r);return q>=2.5&&q<=60});return ok.length?ok[Math.floor(Math.random()*ok.length)]:REFS.slice().sort((x,y)=>Math.abs(Math.log(o.L/M(x)/10))-Math.abs(Math.log(o.L/M(y)/10)))[0]}
+/* DATABASE: nama|ukuran_m|kategori|bentuk  (tambah baris baru di sini) */
+const DB=`
+Buku Novel Hardcover|0.20|Alat Tulis & Kantor|Balok Pipih
+Kertas A4|0.297|Alat Tulis & Kantor|Persegi Panjang Pipih
+Kartu Kredit / ATM|0.085|Benda Harian|Persegi Panjang Pipih
+Paspor|0.125|Benda Harian|Persegi Panjang Lipat
+Amplop Surat Standar|0.23|Alat Tulis & Kantor|Persegi Panjang Pipih
+Kamus Tebal|0.25|Alat Tulis & Kantor|Balok Tebal
+Kartu Nama|0.09|Alat Tulis & Kantor|Persegi Panjang Pipih
+Peta Dunia Lipat|0.85|Geografi & Peta|Persegi Panjang Lipat
+Koran Harian|0.58|Alat Tulis & Kantor|Persegi Panjang Lipat
+Kertas Post-it Stick|0.075|Alat Tulis & Kantor|Kubus Pipih
+Kalender Dinding|0.50|Mebel & Perabot|Persegi Panjang Pipih
+Kertas Origami|0.15|Alat Tulis & Kantor|Persegi Pipih
+Piring Makan Keramik|0.26|Benda Harian|Lingkaran Pipih
+Mangkuk Bakso|0.18|Benda Harian|Setengah Bola
+Gelas Sloki / Shot Glass|0.05|Benda Harian|Silinder Kecil
+Gelas Wine Berpijak|0.22|Benda Harian|Kerucut Bertangkai
+Gelas Cangkir Teh|0.09|Benda Harian|Silinder Bertelinga
+Sendok Makan Besi|0.18|Benda Harian|Batang Oval Cekung
+Garpu Makan Besi|0.18|Benda Harian|Batang Bergigi
+Pisau Dapur Chef|0.30|Peralatan & Perkakas|Bilah Trapesium Gagang
+Sumpit Bambu|0.23|Benda Harian|Dua Batang Tirus
+Sutil / Spatula Kayu|0.35|Benda Harian|Batang Dayung Pipih
+Wajan Goreng Cekung|0.36|Benda Harian|Piringan Cekung Bertelinga
+Panci Rebus Cor|0.24|Benda Harian|Silinder Dua Telinga
+Talenan Kayu Persegi|0.35|Benda Harian|Balok Pipih
+Talenan Plastik Oval|0.30|Benda Harian|Oval Pipih
+Cobek Batu Kali|0.22|Benda Harian|Piringan Tebal Cekung
+Dripper Kopi V60|0.11|Benda Harian|Kerucut Terbalik Berlubang
+French Press Kopi|0.20|Benda Harian|Silinder Piston
+Tamper Kopi|0.09|Benda Harian|Silinder Berdasar Datar
+Baskom Stainless|0.30|Benda Harian|Setengah Bola Cekung
+Kotak Makan Tupperware|0.20|Benda Harian|Balok Berpenutup
+Botol Kecap Kaca|0.25|Benda Harian|Silinder Leher Tirus
+Botol Minyak Goreng 2L|0.30|Benda Harian|Silinder Berlekuk
+Tempat Garam Lada|0.08|Benda Harian|Silinder Berlubang
+Baki / Nampan Kayu|0.40|Benda Harian|Balok Pipih Bertepi
+Penebal Adonan Rolling Pin|0.40|Benda Harian|Silinder Dua Gagang
+Mug Keramik Sablon|0.11|Benda Harian|Silinder Bertelinga
+Asbak Rokok Kaca|0.10|Benda Harian|Cakram Cekung
+Korek Api Kayu (Kotak)|0.05|Benda Harian|Balok Kecil
+Lilin Batangan White|0.20|Benda Harian|Silinder Tinggi Sumbu
+Sisir Rambut Bergigi|0.20|Benda Harian|Persegi Panjang Bergigi
+Sikat Gigi Dewasa|0.18|Benda Harian|Batang Bulu Sikat
+Cermin Lipat Saku|0.09|Benda Harian|Persegi Panjang Lipat
+Dompet Pria Lipat Dua|0.11|Benda Harian|Persegi Panjang Lipat
+Botol Parfum Kaca|0.10|Benda Harian|Balok Kaca Semprot
+Lipstik Tabung|0.08|Benda Harian|Silinder Kecil Lipat
+Bedak Padat Compact|0.07|Benda Harian|Cakram Engsel Mirror
+Kunci Rumah Standar|0.06|Benda Harian|Batang Gepeng Bergigi
+Lampu Senter Tangan|0.18|Benda Harian|Silinder Corong Depan
+Payung Lipat Tiga|0.25|Benda Harian|Silinder Pendek
+Masker Medis 3-Ply|0.175|Benda Harian|Persegi Panjang Tali Telinga
+Termometer Badan Digital|0.13|Benda Harian|Batang Tirus Layar
+Jas Hujan Ponco|1.20|Pakaian & Aksesoris|Persegi Panjang Berpenutup Kepala
+Topi Baret Militer|0.22|Pakaian & Aksesoris|Cakram Kain Cembung
+Dasi Kupu-Kupu|0.12|Pakaian & Aksesoris|Pita Simetris
+Kancing Baju 4 Lubang|0.015|Pakaian & Aksesoris|Cakram Berlubang
+Ritsleting Metal 20cm|0.20|Pakaian & Aksesoris|Pita Gigi Slider
+Bantal Kepala Tidur|0.60|Mebel & Perabot|Balok Cembung Empuk
+Guling Tidur|0.90|Mebel & Perabot|Silinder Empuk
+Handuk Mandi Dewasa|1.40|Benda Harian|Persegi Panjang Kain
+Sajadah Sholat Fleksibel|1.10|Benda Harian|Persegi Panjang Kain
+Gorden Jendela Rumah|2.00|Mebel & Perabot|Persegi Panjang Lipatan
+Cincin Emas Polos|0.02|Pakaian & Aksesoris|Cincin Lingkaran
+Kaos Polos Cotton|0.70|Pakaian & Aksesoris|T-Shape Kain
+Kemeja Lengan Panjang|0.75|Pakaian & Aksesoris|T-Shape Berkerah
+Sepatu Sneaker Kasual|0.28|Pakaian & Aksesoris|L-Shape Bertali Karet
+Topi Kupluk Beanie|0.20|Pakaian & Aksesoris|Kubah Kain Rajut
+Mistar Segitiga Sama Kaki|0.20|Alat Tulis & Kantor|Segitiga Siku Pipih
+Busur Derajat Transparan|0.10|Alat Tulis & Kantor|Setengah Lingkaran Pipih
+Pensil Kayu 2B|0.175|Alat Tulis & Kantor|Hexagonal Batang
+Pulpen Gel Hitam|0.14|Alat Tulis & Kantor|Silinder Klip
+Rautan Pensil Kecil|0.025|Alat Tulis & Kantor|Balok Kecil Pisau
+Tipe-X Cair Botol|0.07|Alat Tulis & Kantor|Silinder Kuas
+Lem Stik Glue Stick|0.10|Alat Tulis & Kantor|Silinder Putar
+Stapler Tembak Gun Tacker|0.18|Alat Tulis & Kantor|Pistol Balok Besi
+Jepitan Kertas Binder Clip|0.05|Alat Tulis & Kantor|Segitiga Dua Kawat
+Papan Tulis Kapur Wood|0.90|Alat Tulis & Kantor|Persegi Bingkai Kayu
+Penggaris Besi 50cm|0.50|Alat Tulis & Kantor|Batang Pipih Logam
+Kalkulator Ilmiah / Sains|0.16|Elektronik & Gadget|Persegi Panjang Layar LCD
+Disket Komputer 3.5 Inci|0.09|Elektronik & Gadget|Persegi Pipih Plastik
+CD / DVD Rom Disk|0.12|Elektronik & Gadget|Cakram Berlubang Tengah
+Memory Card SD Card|0.032|Elektronik & Gadget|Persegi Pipih Chip
+Kabel HDMI Braided|2.00|Elektronik & Gadget|Kabel Port Pipih
+Mousepad Gaming Cloth|0.30|Elektronik & Gadget|Persegi Panjang Fleksibel
+Webcam USB HD|0.08|Elektronik & Gadget|Balok Lensa Jepitan
+Power Bank MagSafe|0.09|Elektronik & Gadget|Balok Pipih Magnet
+Remote TV Universal|0.18|Elektronik & Gadget|Persegi Panjang Tombol
+Timbangan Dapur Digital|0.20|Elektronik & Gadget|Papan Datar Layar LCD
+Walkie Talkie HT|0.15|Elektronik & Gadget|Balok Antena Tegak
+Soundbar TV Horisontal|0.80|Elektronik & Gadget|Balok Memanjang Jaring
+CCTV Dome Kamera|0.11|Elektronik & Gadget|Setengah Bola Kaca
+Aki Motor 12V|0.12|Elektronik & Gadget|Balok Dua Simpul
+Panel Surya Portable 100W|0.60|Elektronik & Gadget|Persegi Panjang Sel Hitam
+Kamera Mirrorless Body|0.12|Elektronik & Gadget|Balok Grip Lensa
+Lensa Fix 50mm Kamera|0.06|Elektronik & Gadget|Silinder Pendek Kaca
+Drone Mini Micro|0.08|Elektronik & Gadget|X-Frame Baling-Baling
+Batu Bata Merah|0.20|Bangunan & Arsitektur|Balok
+Batu Batako Semen|0.36|Bangunan & Arsitektur|Balok Berongga
+Keramik Lantai 40x40|0.40|Bangunan & Arsitektur|Persegi Pipih
+Genteng Tanah Liat|0.30|Bangunan & Arsitektur|Lengkung Gelombang Pipih
+Seng Gelombang Atap|1.80|Bangunan & Arsitektur|Lembaran Gelombang Memanjang
+Triplek Kayu 4mm|2.44|Bangunan & Arsitektur|Persegi Panjang Pipih
+Pipa Paralon PVC 3 Inci|4.00|Bangunan & Arsitektur|Silinder Panjang Berongga
+Besi Beton Ulir 12mm|12.00|Bangunan & Arsitektur|Batang Ulir Silinder
+Semen Bag 50kg|0.60|Bangunan & Arsitektur|Balok Fleksibel Sack
+Pintu Kayu Solid|2.10|Bangunan & Arsitektur|Balok Pipih Tall
+Kaca Jendela Polos 5mm|1.20|Bangunan & Arsitektur|Persegi Panjang Kaca
+Kloset Duduk Keramik|0.70|Bangunan & Arsitektur|L-Shape Cawan Tangki
+Ember Cat Tembok 20kg|0.38|Bangunan & Arsitektur|Silinder Gagang Kawat
+Kuas Cat 3 Inci|0.20|Peralatan & Perkakas|Batang Bulu Pipih
+Mata Bor Beton 8mm|0.12|Peralatan & Perkakas|Batang Ulir Runcing
+Palu Karet Oranye|0.30|Peralatan & Perkakas|T-Shape Kepala Karet
+Gergaji Besi Hack Saw|0.40|Peralatan & Perkakas|Rangka Bow Bilah Tipis
+Linggis Ulir Cabut Paku|0.90|Peralatan & Perkakas|Batang Bengkok Cungkil
+Cangkul Sawah Baji|0.40|Peralatan & Perkakas|Bilah Pipih L-Gagang
+Sekop Pasir Tajam|1.00|Peralatan & Perkakas|Cekung Sendok Gagang
+Gunting Rumput Panjang|0.50|Peralatan & Perkakas|Dua Bilah Panjang Silang
+Tang Potong Kabel|0.16|Peralatan & Perkakas|Dua Capit Tajam
+Obeng Minus Datar|0.22|Peralatan & Perkakas|Batang Besi Ujung Pipih
+Kunci Pas Ring Kombinasi|0.20|Peralatan & Perkakas|Batang Celah Cincin
+Tangga Alumunium Lipat 2m|2.00|Peralatan & Perkakas|Rangka A-Shape Anak Tangga
+Keranjang Belanja Supermarket|0.45|Benda Harian|Balok Berlubang Pegangan
+Jaring Ikan Nelayan|5.00|Benda Harian|Jaring Belah Ketupat
+Matras Yoga NBR|1.80|Alat Olahraga|Persegi Panjang Gulung
+Dumbbell Vinyl 2 kg|0.20|Alat Olahraga|Dua Bola Batang
+Gym Ball Fitness 65cm|0.65|Alat Olahraga|Bola Besar
+Papan Catur Lipat Kayu|0.40|Alat Olahraga|Persegi Panjang Lipat
+Papan Dart Game|0.45|Alat Olahraga|Cakram Lingkaran Target
+Bola Golf Putih|0.042|Alat Olahraga|Bola Berlesung
+Bet Tenis Meja Busa|0.25|Alat Olahraga|Oval Bertangkai Kayu
+Jaring Gawang Sepakbola|7.32|Alat Olahraga|Jaring Kotak Luas
+Net Badminton Standar|6.10|Alat Olahraga|Pita Jaring Panjang
+Medali Juara Logam|0.07|Alat Olahraga|Cakram Logam Pita
+Kelereng Marbel Kaca|0.015|Alat Olahraga|Bola Kaca
+Dadu Akrilik Boardgame|0.016|Alat Olahraga|Kubus
+Kartu Uno Card Game|0.09|Alat Olahraga|Persegi Panjang Pipih
+Lego Bricks Basic 2x4|0.032|Alat Olahraga|Balok Tonjolan
+Puzzle 100 Piece|0.40|Alat Olahraga|Persegi Kepingan
+Organ Toy Piano Anak|0.30|Alat Musik|Balok Tombol Musik
+Balon Karet Tiup|0.25|Benda Harian|Oval Tipis Udara
+Perahu Karet Ban|2.00|Kendaraan|V-Hull Tiup
+Barbell Disc Plate 10kg|0.32|Alat Olahraga|Cakram Besi Berlubang
+Tali Kernmantle 50m|50.00|Alat Olahraga|Gulungan Tali Serat
+Tenda Dome 4 Person|2.10|Bangunan & Arsitektur|Kubah Kain Frame
+Sleeping Bag Mummy|2.00|Benda Harian|Kepompong Kain Zipper
+Kompas Bidik Prisma|0.08|Geografi & Peta|Cakram Engsel Cermin
+Tas Carrier 60 Liter|0.75|Benda Harian|Balok Tingkat Rangka
+Tas Daypack 20L|0.45|Benda Harian|Kantung Zipper
+Bola Sepak Ukuran 5|0.22|Geometri Sederhana|Bola
+Bola Basket Ukuran 7|0.24|Geometri Sederhana|Bola
+Bola Tenis|0.067|Geometri Sederhana|Bola
+Bola Pingpong|0.04|Geometri Sederhana|Bola
+Bola Biliar|0.057|Geometri Sederhana|Bola
+Bola Bowling|0.218|Geometri Sederhana|Bola
+Bola Voli|0.21|Geometri Sederhana|Bola
+Bola Kasti Karet|0.06|Geometri Sederhana|Bola
+Bola Bekel|0.03|Geometri Sederhana|Bola
+Kelereng Kaca|0.016|Geometri Sederhana|Bola
+Globe Meja Mini|0.30|Geometri Sederhana|Bola
+Buah Anggur|0.02|Geometri Sederhana|Bola
+Botol Air Mineral 600 ml|0.21|Geometri Sederhana|Botol
+Botol Air Mineral 1.5 L|0.31|Geometri Sederhana|Botol
+Botol Bir 330 ml|0.23|Geometri Sederhana|Botol
+Botol Wine 750 ml|0.30|Geometri Sederhana|Botol
+Botol Susu Bayi|0.16|Geometri Sederhana|Botol
+Botol Saus Sambal|0.20|Geometri Sederhana|Botol
+Botol Tumbler Minum|0.25|Geometri Sederhana|Botol
+Botol Obat Sirup|0.12|Geometri Sederhana|Botol
+Botol Tinta Printer|0.06|Geometri Sederhana|Botol
+Kartu Remi Poker|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Bridge|0.089|Geometri Sederhana|Kartu Remi
+Kartu Tarot|0.12|Geometri Sederhana|Kartu Remi
+Kartu Remi Mini|0.06|Geometri Sederhana|Kartu Remi
+Domino Standar|0.048|Geometri Sederhana|Domino
+Domino Kayu Besar|0.08|Geometri Sederhana|Domino
+Domino Mainan Anak|0.06|Geometri Sederhana|Domino
+Domino Double Six Plastik|0.05|Geometri Sederhana|Domino
+Dadu Standar 16 mm|0.016|Geometri Sederhana|Dadu
+Dadu Besar Permainan|0.03|Geometri Sederhana|Dadu
+Koin Seratus Rupiah|0.0225|Geometri Sederhana|Koin
+Koin Lima Ratus Rupiah|0.027|Geometri Sederhana|Koin
+Koin Seribu Rupiah|0.0245|Geometri Sederhana|Koin
+Kaleng Minuman 330 ml|0.122|Geometri Sederhana|Kaleng
+Kaleng Sarden|0.06|Geometri Sederhana|Kaleng
+Kucing Rumah|0.6|Hewan|=cat
+Kuda Pacu|2.4|Hewan|=horse
+Gajah Afrika|6|Hewan|=elephant
+Zebra|2.2|Hewan|=zebra
+Sapi Holstein|2.5|Hewan|=cow
+Kupu-Kupu Raja|0.1|Hewan|=butter
+Katak Sawah|0.08|Hewan|=frog
+Penyu Hijau|1.1|Hewan|=turtle
+Kepiting Batu|0.15|Hewan|=crab
+Gurita|0.6|Hewan|=octo
+Ubur-Ubur|0.3|Hewan|=jelly
+Kecoa Rumah|0.04|Hewan|=bug
+Belalang Hijau|0.06|Hewan|=bug
+Jerapah|5|Hewan|=giraffe:h
+Burung Merpati|0.3|Hewan|=bird:h
+Ikan Lele|0.4|Hewan|=fish
+Ikan Paus Biru|25|Hewan|=fish
+Sepeda Balap|1.75|Kendaraan|=bike
+Vespa Matik|1.8|Kendaraan|=moto
+Bus Kota|12|Kendaraan|=bus
+Pikap Bak Terbuka|5|Kendaraan|=truck
+Rangkaian KRL 8 Gerbong|200|Kendaraan|=train
+Pesawat Airbus A320|37.6|Kendaraan|=plane
+Helikopter Medis|12|Kendaraan|=heli
+Kapal Selam Diesel|70|Kendaraan|=sub
+Roket Falcon 9|70|Kendaraan|=rocket:h
+Menara Pisa|56|Landmark|=pisa:h
+Pagoda Lima Tingkat|30|Landmark|=pagoda:h
+Menara Jam Besar|96|Landmark|=tower:h
+Pohon Mangga|10|Landmark|=tree:h
+Apel Fuji|0.08|Buah & Sayur|Bola
+Jeruk Mandarin|0.065|Buah & Sayur|Bola
+Semangka|0.30|Buah & Sayur|Oval
+Pisang Ambon|0.18|Buah & Sayur|=banana
+Mangga Harum Manis|0.15|Buah & Sayur|=mango
+Nanas Madu|0.3|Buah & Sayur|=pine:h
+Alpukat Mentega|0.12|Buah & Sayur|=pear:h
+Telur Ayam|0.055|Buah & Sayur|=egg
+Kentang Medium|0.09|Buah & Sayur|=egg
+Stroberi|0.035|Buah & Sayur|=berry:h
+Daun Pisang|1.2|Buah & Sayur|=leaf
+Bunga Mawar Merah|0.6|Buah & Sayur|=flower:h
+Biola|0.6|Alat Musik|=violin
+Cello|1.2|Alat Musik|=violin
+Grand Piano|2.7|Alat Musik|=piano
+Harmonika Tiup|0.10|Alat Musik|=harmonica
+Xylophone Anak|0.6|Alat Musik|=xylo
+Synthesizer 61 Tuts|1.0|Alat Musik|=synth
+Laptop 14 Inci|0.32|Elektronik & Gadget|=laptop
+Mouse Kabel|0.11|Elektronik & Gadget|=mouse
+Keyboard Fullsize|0.44|Elektronik & Gadget|=kb
+TV LED 55 Inci|1.23|Elektronik & Gadget|=monitor
+Monitor 24 Inci|0.54|Elektronik & Gadget|=monitor
+Bohlam LED|0.11|Elektronik & Gadget|=bulb:h
+Smartphone Flagship|0.15|Elektronik & Gadget|=phone:h
+Tablet 11 Inci|0.25|Elektronik & Gadget|=tablet:h
+Kamera DSLR|0.15|Elektronik & Gadget|=camera
+Headphone Over-Ear|0.19|Elektronik & Gadget|=headphone
+Baterai AA|0.05|Elektronik & Gadget|=battery
+Gunting Kertas|0.2|Peralatan & Perkakas|=scissors
+Palu Besi|0.33|Peralatan & Perkakas|=hammer
+Kunci Inggris|0.25|Peralatan & Perkakas|=wrench
+Gergaji Tangan|0.5|Peralatan & Perkakas|=saw
+Gembok Kecil|0.05|Peralatan & Perkakas|=padlock:h
+Kunci Pintu Rumah|0.06|Benda Harian|=key
+Kacamata Minus|0.14|Pakaian & Aksesoris|=glasses
+Payung Golf|1.2|Pakaian & Aksesoris|=umbrella
+Helm Sepeda|0.28|Pakaian & Aksesoris|=helmet
+Topi Baseball|0.25|Pakaian & Aksesoris|=hat
+Sepatu Bot Kulit|0.3|Pakaian & Aksesoris|=shoe
+Kaos Oblong|0.7|Pakaian & Aksesoris|=tshirt
+Gantungan Baju Plastik|0.4|Benda Harian|=hanger
+Sendok Teh|0.14|Benda Harian|=spoon
+Sendok Makan Stainless|0.2|Benda Harian|=spoon
+Garpu Makan|0.19|Benda Harian|=fork
+Sisir Plastik|0.2|Benda Harian|=comb
+Wajan Penggorengan|0.5|Benda Harian|=pan
+Panci Sup|0.4|Benda Harian|=pot
+Mangkuk Nasi|0.12|Benda Harian|=bowl
+Gelas Anggur|0.2|Benda Harian|=wine:h
+Mug Kopi|0.1|Benda Harian|=mug
+Roti Tawar|0.12|Benda Harian|=bread
+Novel Paperback|0.2|Alat Tulis & Kantor|=book:h
+Buku Tulis A5|0.21|Alat Tulis & Kantor|=book:h
+Kamus Oxford|0.25|Alat Tulis & Kantor|=book:h
+Ban Mobil|0.65|Kendaraan|=ring
+Jam Dinding|0.3|Benda Harian|=clock
+Kursi Kantor|0.9|Mebel & Perabot|=chair:h
+Meja Makan|1.6|Mebel & Perabot|=table
+Sofa Tiga Dudukan|2.1|Mebel & Perabot|=sofa
+Kasur Queen|2.0|Mebel & Perabot|=bed
+Tangga Lipat|2.0|Mebel & Perabot|=ladder:h
+Kipas Angin Meja|0.4|Elektronik & Gadget|=fan
+Kartu Remi Joker|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Bergambar|0.089|Geometri Sederhana|Kartu Remi
+Domino Double Blank|0.048|Geometri Sederhana|Domino
+Domino Set Plastik Besar|0.07|Geometri Sederhana|Domino
+Bola Sepak Mini|0.15|Geometri Sederhana|Bola
+Bola Hoki|0.0735|Geometri Sederhana|Bola
+Bola Softball|0.097|Geometri Sederhana|Bola
+Bola Rugbi Kecil|0.12|Geometri Sederhana|Bola
+Bola Salju Kepal|0.1|Geometri Sederhana|Bola
+Bola Lampu Hias|0.08|Geometri Sederhana|Bola
+Botol Soda 1 L|0.30|Geometri Sederhana|Botol
+Botol Minyak Zaitun|0.28|Geometri Sederhana|Botol
+Botol Kecap Mini|0.14|Geometri Sederhana|Botol
+Botol Cologne|0.09|Geometri Sederhana|Botol
+Botol Jus Kaca|0.19|Geometri Sederhana|Botol
+Botol Sampanye|0.32|Geometri Sederhana|Botol
+Dadu Kecil 12 mm|0.012|Geometri Sederhana|Dadu
+Koin Dua Ratus Rupiah|0.0235|Geometri Sederhana|Koin
+Labrador Retriever|0.9|Hewan|=dog
+Serigala Abu-abu|1.4|Hewan|=wolf
+Kuda Nil|3.5|Hewan|=hippo
+Komodo|2.5|Hewan|=reptile
+Lebah Madu|0.015|Hewan|=bug
+Semut Hitam|0.004|Hewan|=bug
+Kumbang Tanduk|0.06|Hewan|=bug
+Kupu-Kupu Kuning|0.06|Hewan|=butter
+Katak Pohon|0.045|Hewan|=frog
+Kura-Kura Darat|0.3|Hewan|=turtle
+Kepiting Bakau|0.2|Hewan|=crab
+Cumi-Cumi|0.3|Hewan|=squid
+Ikan Mas Koki|0.15|Hewan|=fish
+Ikan Hiu Putih|4.5|Hewan|=fish
+Burung Hantu|0.4|Hewan|=bird:h
+Burung Pipit|0.12|Hewan|=bird:h
+Durian Montong|0.25|Buah & Sayur|=durian
+Lemon Kuning|0.07|Buah & Sayur|=lemon
+Buah Pir|0.11|Buah & Sayur|=pear:h
+Pepaya California|0.25|Buah & Sayur|=mango
+Anggrek Bulan|0.4|Buah & Sayur|=flower:h
+Tetes Air Hujan|0.005|Geometri Sederhana|=drop:h
+Sekrup Kayu|0.05|Peralatan & Perkakas|=screw
+Sekrup Panjang Baja|0.1|Peralatan & Perkakas|=screw
+Bidak Catur Raja|0.095|Alat Olahraga|=pawn:h
+Bidak Catur Pion|0.045|Alat Olahraga|=pawn:h
+Papan Catur Turnamen|0.5|Alat Olahraga|=board8
+Roda Sepeda Gunung|0.7|Kendaraan|=wheel
+Roda Mobil Velg|0.6|Kendaraan|=wheel
+Kerucut Lalu Lintas|0.7|Bangunan & Arsitektur|=cone:h
+Rambu Stop|0.75|Bangunan & Arsitektur|=stop:h
+Rak Buku Kayu|1.8|Mebel & Perabot|=bookcase:h
+Kipas Angin Berdiri|0.4|Elektronik & Gadget|=fan
+Baling-Baling Kipas|0.3|Elektronik & Gadget|=fan
+Candi Kecil|30|Landmark|=temple
+Colosseum Roma|188|Landmark|=colosseum
+Turbin Angin|80|Landmark|=turbine:h
+Kios Koran|2.5|Landmark|=kiosk:h
+Pulau Kecil|1500|Landmark|=island
+Kapal Kargo|300|Kendaraan|=cargo
+Kapal Feri|100|Kendaraan|=ship
+Motor Sport|2.0|Kendaraan|=moto
+Truk Kontainer|10|Kendaraan|=truck
+Helikopter Mini|4|Kendaraan|=heli
+Pesawat Cessna|8.3|Kendaraan|=plane
+Kereta Api Ekspres|240|Kendaraan|=train
+Sepeda Lipat|1.4|Kendaraan|=bike
+Orang Dewasa Berdiri|1.7|Benda Harian|=person:h
+Anak Kecil|1.1|Benda Harian|=person:h
+Pohon Natal|2.1|Landmark|=tree:h
+Pohon Beringin|20|Landmark|=tree:h
+Router Wi-Fi|0.2|Elektronik & Gadget|=router
+Chip Prosesor|0.04|Elektronik & Gadget|=chip
+Hair Dryer|0.22|Elektronik & Gadget|=dryer
+Kamera Saku|0.1|Elektronik & Gadget|=camera
+Jam Tangan Analog|0.04|Pakaian & Aksesoris|=clock
+Cincin Berlian|0.02|Pakaian & Aksesoris|=ring
+Gelang Bangle|0.07|Pakaian & Aksesoris|=ring
+Sandal Jepit|0.27|Pakaian & Aksesoris|=shoe
+Gergaji Kayu Besar|0.65|Peralatan & Perkakas|=saw
+Palu Godam|0.9|Peralatan & Perkakas|=hammer
+Kunci Shock Panjang|0.4|Peralatan & Perkakas|=wrench
+Cangkul Petani|1.2|Peralatan & Perkakas|=shovel
+Kuas Lukis Besar|0.3|Alat Tulis & Kantor|=brush
+Gunting Besar Tukang Jahit|0.25|Alat Tulis & Kantor|=scissors
+Pisau Buah|0.2|Peralatan & Perkakas|=knife
+Donat Glasir|0.1|Makanan|=ring
+Burger Keju|0.11|Makanan|=bread
+Roti Baguette|0.65|Makanan|Batang
+Roti Bagel|0.11|Makanan|=ring
+Telur Puyuh|0.03|Makanan|=egg
+Kerupuk Bulat|0.1|Makanan|Bola
+Cokelat Batang|0.17|Makanan|Persegi Panjang Pipih
+Sosis Bakar|0.15|Makanan|Batang
+Pizza Box|0.35|Makanan|Persegi Pipih
+Piring Sate|0.2|Benda Harian|Piring
+Piring Lauk Melamin|0.24|Benda Harian|Piring
+Piring Kue Kecil|0.15|Benda Harian|Piring
+Asbak Keramik|0.12|Benda Harian|Piring
+Kaleng Susu Kental|0.095|Makanan|Kaleng
+Kaleng Cat 1 Kg|0.14|Bangunan & Arsitektur|Kaleng
+Kaleng Biskuit Besar|0.22|Makanan|Kaleng
+Toples Kue Lebaran|0.2|Benda Harian|Toples
+Toples Selai|0.09|Benda Harian|Toples
+Pulpen Bolpoin Biru|0.145|Alat Tulis & Kantor|Pulpen
+Pensil Warna|0.175|Alat Tulis & Kantor|Pensil
+Spidol Whiteboard|0.14|Alat Tulis & Kantor|Spidol
+Pena Bulu Antik|0.25|Alat Tulis & Kantor|Pena
+Dumbbell 5 kg|0.3|Alat Olahraga|Dumbbell
+Dumbbell Hex Besar|0.35|Alat Olahraga|Dumbbell
+CD Album Musik|0.12|Elektronik & Gadget|CD
+Ember Plastik 10 L|0.27|Benda Harian|Ember
+Ember Cor Semen|0.35|Bangunan & Arsitektur|Ember
+Piala Juara Kecil|0.3|Alat Olahraga|Piala
+Piala Bergilir Besar|0.6|Alat Olahraga|Piala
+Pistol Air Mainan|0.22|Alat Olahraga|Pistol
+Drone Fotografi|0.35|Elektronik & Gadget|Drone
+Drone Racing FPV|0.22|Elektronik & Gadget|Drone
+Kancing Kemeja|0.011|Pakaian & Aksesoris|=button
+Kancing Jas|0.02|Pakaian & Aksesoris|=button
+Kancing Jaket Logam|0.025|Pakaian & Aksesoris|=button
+Kipas Plafon|1.2|Elektronik & Gadget|Kipas
+Payung Lipat Mini|0.22|Pakaian & Aksesoris|Payung
+Payung Anak Transparan|0.6|Pakaian & Aksesoris|Payung
+Celana Jeans|1.0|Pakaian & Aksesoris|Celana
+Jaket Bomber|0.68|Pakaian & Aksesoris|Jaket
+Kunci Sok 17|0.2|Peralatan & Perkakas|Kunci Sok
+Kunci L Panjang|0.15|Peralatan & Perkakas|Kunci L
+Tang Kombinasi|0.2|Peralatan & Perkakas|Tang
+Tang Lancip|0.16|Peralatan & Perkakas|Tang
+Eiffel Tower|330|Landmark|=tower:h
+Borobudur|123|Landmark|=stupa
+Burj Khalifa|828|Landmark|=tower:h
+Monumen Nasional|132|Landmark|=tower:h
+Gedung Pencakar Langit|300|Landmark|=kiosk:h
+Ambulans|6|Kendaraan|=truck
+Bajaj Oranye|2.7|Kendaraan|=moto
+Becak Kayuh|2.5|Kendaraan|=bike
+Kapal Pinisi|30|Kendaraan|=ship
+Kapal Pesiar|300|Kendaraan|=ship
+Gerbong Kereta|25|Kendaraan|=train
+Roket Saturn V|110.6|Kendaraan|=rocket:h
+Kapal Tanker Minyak|330|Kendaraan|=cargo
+Jet Tempur|15|Kendaraan|=plane
+Pesawat Boeing 747|70.7|Kendaraan|=plane
+Helikopter Militer|17|Kendaraan|=heli
+Motor Trail|2.1|Kendaraan|=moto
+Truk Sampah|7|Kendaraan|=truck
+Bola Pantai Tiup|0.4|Geometri Sederhana|Bola
+Bola Yoga|0.55|Geometri Sederhana|Bola
+Bola Karet Mainan|0.07|Geometri Sederhana|Bola
+Bola Plastik Anak|0.15|Geometri Sederhana|Bola
+Bola Kaca Mainan|0.05|Geometri Sederhana|Bola
+Bola Takraw Mini|0.12|Geometri Sederhana|Bola
+Botol Shampo|0.2|Geometri Sederhana|Botol
+Botol Saus Tomat|0.22|Geometri Sederhana|Botol
+Botol Madu|0.17|Geometri Sederhana|Botol
+Botol Sirup Kaca|0.27|Geometri Sederhana|Botol
+Botol Kaca Antik|0.35|Geometri Sederhana|Botol
+Kartu UNO Premium|0.09|Geometri Sederhana|Kartu Remi
+Kartu Koleksi Trading|0.088|Geometri Sederhana|Kartu Remi
+Kartu Remi Jumbo|0.14|Geometri Sederhana|Kartu Remi
+Domino Kayu Mini|0.04|Geometri Sederhana|Domino
+Domino Tebal Premium|0.055|Geometri Sederhana|Domino
+Dadu Kayu Besar|0.025|Geometri Sederhana|Dadu
+Dadu Mini 8 mm|0.008|Geometri Sederhana|Dadu
+Koin Lima Ribu Emas|0.02|Geometri Sederhana|Koin
+Singa Jantan|2.5|Hewan|=lion
+Harimau Sumatera|2.4|Hewan|=tiger
+Beruang Cokelat|2.0|Hewan|=bear
+Badak Bercula Satu|3.8|Hewan|=rhino
+Babi Hutan|1.5|Hewan|=pig
+Rusa Timor|1.8|Hewan|=deer
+Domba Garut|1.2|Hewan|=sheep
+Kelinci Anggora|0.45|Hewan|=rabbit
+Unta Arab|3.0|Hewan|=camel
+Monyet Ekor Panjang|0.5|Hewan|=monkey
+Kucing Anggora|0.5|Hewan|=cat
+Anjing Chihuahua|0.3|Hewan|=dog
+Anjing Husky|1.0|Hewan|=dog
+Serigala Merah|1.2|Hewan|=wolf
+Kuda Poni|1.8|Hewan|=horse
+Sapi Limousin|2.6|Hewan|=cow
+Kambing Kacang|1.0|Hewan|=sheep
+Ayam Jago|0.6|Hewan|=bird:h
+Bebek Peking|0.5|Hewan|=bird:h
+Elang Botak|0.9|Hewan|=bird:h
+Penguin Kaisar|1.1|Hewan|=bird:h
+Ikan Kakap|0.6|Hewan|=fish
+Ikan Badut|0.1|Hewan|=fish
+Ikan Tuna Sirip Biru|2.5|Hewan|=fish
+Kura-Kura Laut Raksasa|1.5|Hewan|=turtle
+Kadal Hijau|0.3|Hewan|=reptile
+Buaya Muara|4.5|Hewan|=reptile
+Tokek Rumah|0.3|Hewan|=reptile
+Kodok Buduk|0.12|Hewan|=frog
+Lalat Buah|0.003|Hewan|=bug
+Nyamuk Malaria|0.006|Hewan|=bug
+Jangkrik Gua|0.04|Hewan|=bug
+Kupu-Kupu Biru|0.08|Hewan|=butter
+Ubur-Ubur Bulan|0.25|Hewan|=jelly
+Gurita Raksasa|3.0|Hewan|=octo
+Cumi Raksasa|10|Hewan|=squid
+Teko Teh Keramik|0.22|Benda Harian|Teko
+Teko Kopi Enamel|0.25|Benda Harian|Teko
+Guling Bayi|0.6|Mebel & Perabot|Guling
+Bantal Sofa|0.45|Mebel & Perabot|Bantal
+Bantal Peluk|0.7|Mebel & Perabot|Bantal
+Karung Beras 25 kg|0.7|Benda Harian|Kantong Semen
+Semen Bag 40kg|0.55|Bangunan & Arsitektur|Semen Bag
+Botol Semprotan Kaca|0.2|Benda Harian|Semprotan
+Semprotan Pembasmi Serangga|0.27|Benda Harian|Semprotan
+Gulungan Kertas Kado|0.5|Benda Harian|Gulungan
+Gulungan Tisu Toilet|0.1|Benda Harian|Gulungan
+Laptop Gaming 17 Inci|0.4|Elektronik & Gadget|=laptop
+Monitor Ultrawide|0.82|Elektronik & Gadget|=monitor
+Smartphone Lipat|0.17|Elektronik & Gadget|=phone:h
+Tablet Mini|0.2|Elektronik & Gadget|=tablet:h
+Kamera Aksi|0.06|Elektronik & Gadget|=camera
+Mouse Gaming|0.12|Elektronik & Gadget|=mouse
+Papan Ketik Mekanik|0.36|Elektronik & Gadget|=kb
+Headphone Gaming|0.21|Elektronik & Gadget|=headphone
+Lampu Pijar|0.11|Elektronik & Gadget|=bulb:h
+Lampu Neon Tabung|1.2|Elektronik & Gadget|Batang
+Baterai C|0.05|Elektronik & Gadget|=battery
+Baterai D Besar|0.06|Elektronik & Gadget|=battery
+Sendok Kayu Masak|0.3|Benda Harian|=spoon
+Garpu Salad|0.17|Benda Harian|=fork
+Sendok Es Krim|0.12|Benda Harian|=spoon
+Kunci Mobil|0.07|Benda Harian|=key
+Kunci Gembok Mini|0.04|Benda Harian|=key
+Kacamata Hitam|0.145|Pakaian & Aksesoris|=glasses
+Kacamata Bulat Klasik|0.14|Pakaian & Aksesoris|=glasses
+Helm Motor Full Face|0.33|Pakaian & Aksesoris|=helmet
+Helm Proyek|0.28|Pakaian & Aksesoris|=helmet
+Topi Jerami|0.4|Pakaian & Aksesoris|=hat
+Topi Pantai|0.38|Pakaian & Aksesoris|=hat
+Kaos Anak|0.45|Pakaian & Aksesoris|=tshirt
+Kemeja Batik|0.72|Pakaian & Aksesoris|=tshirt
+Sepatu Sneaker Anak|0.2|Pakaian & Aksesoris|=shoe
+Sepatu Futsal|0.27|Pakaian & Aksesoris|=shoe
+Gergaji Pemotong Pipa|0.45|Peralatan & Perkakas|=saw
+Palu Bata|0.3|Peralatan & Perkakas|=hammer
+Kunci Inggris Besar|0.45|Peralatan & Perkakas|=wrench
+Sekop Taman|0.9|Peralatan & Perkakas|=shovel
+Gunting Kebun|0.22|Peralatan & Perkakas|=scissors
+Pisau Roti|0.33|Peralatan & Perkakas|=knife
+Sikat Toilet|0.4|Benda Harian|=brush
+Sikat Cat Dinding|0.25|Peralatan & Perkakas|=brush
+Mangkuk Sup Keramik|0.15|Benda Harian|=bowl
+Mangkuk Kaca Saji|0.2|Benda Harian|=bowl
+Gelas Anggur Merah|0.22|Benda Harian|=wine:h
+Gelas Sampanye Flute|0.23|Benda Harian|=wine:h
+Mug Enamel Camping|0.09|Benda Harian|=mug
+Cangkir Teh Porselen|0.08|Benda Harian|=mug
+Buku Komik Tebal|0.26|Alat Tulis & Kantor|=book:h
+Buku Sketsa A4|0.3|Alat Tulis & Kantor|=book:h
+Buku Telepon Lama|0.25|Alat Tulis & Kantor|=book:h
+Jam Dinding Besar|0.6|Mebel & Perabot|=clock
+Jam Weker|0.12|Benda Harian|=clock
+Jam Tangan Digital|0.045|Pakaian & Aksesoris|=clock
+Kursi Makan Kayu|0.9|Mebel & Perabot|=chair:h
+Meja Kerja|1.2|Mebel & Perabot|=table
+Sofa Dua Dudukan|1.6|Mebel & Perabot|=sofa
+Kasur Single|1.9|Mebel & Perabot|=bed
+Bus Sekolah|11|Kendaraan|=bus
+Bus Tingkat|10|Kendaraan|=bus
+Motor Matic|1.85|Kendaraan|=moto
+Sepeda Anak|1.1|Kendaraan|=bike
+Truk Tangki|9|Kendaraan|=truck
+Pesawat Jumbo A380|72.7|Kendaraan|=plane
+Helikopter Polisi|13|Kendaraan|=heli
+Kapal Selam Nuklir|110|Kendaraan|=sub
+Roket Ariane 5|52|Kendaraan|=rocket:h
+Menara Sutet|40|Landmark|=tower:h
+Menara Telekomunikasi|100|Landmark|=tower:h
+Tugu Pagoda Kecil|12|Landmark|=pagoda:h
+Kuil Yunani|30|Landmark|=temple
+Pohon Kelapa|20|Landmark|=tree:h
+Pohon Cemara|15|Landmark|=tree:h
+Rafflesia Arnoldii|1.0|Buah & Sayur|=rosette
+Durian Kecil|0.18|Buah & Sayur|=durian
+Nanas Kecil|0.2|Buah & Sayur|=pine:h
+Pir Asia|0.09|Buah & Sayur|=pear:h
+Melon Hijau|0.2|Buah & Sayur|Oval
+Jeruk Bali|0.25|Buah & Sayur|Bola
+Kelapa Muda|0.22|Buah & Sayur|Bola
+Labu Kuning|0.3|Buah & Sayur|Bola
+Tomat Ceri|0.02|Buah & Sayur|Bola
+Bola Pingpong Mainan|0.038|Geometri Sederhana|Bola
+Bola Tenis Meja Pro|0.04|Geometri Sederhana|Bola
+Bola Petanque|0.075|Geometri Sederhana|Bola
+Bola Kristal|0.1|Geometri Sederhana|Bola
+Bola Golf Latihan|0.043|Geometri Sederhana|Bola
+Botol Susu Kaca|0.17|Geometri Sederhana|Botol
+Botol Sabun Cair|0.22|Geometri Sederhana|Botol
+Botol Air Kaca|0.26|Geometri Sederhana|Botol
+Botol Olahraga|0.24|Geometri Sederhana|Botol
+Kartu Mahjong Remi|0.089|Geometri Sederhana|Kartu Remi
+Kartu Identitas Permainan|0.09|Geometri Sederhana|Kartu Remi
+Domino Hitam Klasik|0.05|Geometri Sederhana|Domino
+Domino Gading|0.045|Geometri Sederhana|Domino
+Dadu Permainan Ular Tangga|0.02|Geometri Sederhana|Dadu
+Gitar Akustik|1.0|Alat Musik|Gitar
+Gitar Elektrik Stratocaster|1.0|Alat Musik|Gitar
+Ukulele Soprano|0.53|Alat Musik|Gitar
+Gitar Bass|1.2|Alat Musik|Gitar
+Mandolin|0.6|Alat Musik|Gitar
+Biola Anak 1/2|0.5|Alat Musik|=violin
+Grand Piano Anak|1.6|Alat Musik|=piano
+Xylophone Profesional|1.0|Alat Musik|=xylo
+Harmonika Kromatik|0.14|Alat Musik|=harmonica
+Keyboard Piano 61 Tuts|0.95|Alat Musik|=synth
+Seruling Bambu|0.4|Alat Musik|Batang
+Terompet Tahun Baru|0.3|Alat Musik|Batang
+Microphone Karaoke|0.25|Elektronik & Gadget|Microphone
+Microphone Studio Kondensor|0.2|Elektronik & Gadget|Microphone
+Senter LED Aluminium|0.15|Elektronik & Gadget|Senter
+Senter Tahan Air|0.2|Elektronik & Gadget|Senter
+Headlamp Camping|0.07|Elektronik & Gadget|Senter
+Sutil Penggoreng|0.33|Benda Harian|Sutil
+Centong Sayur|0.3|Benda Harian|Centong
+Centong Nasi Kayu|0.2|Benda Harian|Centong
+Koper Kabin|0.55|Benda Harian|Koper
+Koper Bagasi Besar|0.75|Benda Harian|Koper
+Koper Mini Anak|0.4|Benda Harian|Koper
+Tas Gym Kecil|0.45|Benda Harian|Tas Gym
+Tas Carrier Hiking|0.8|Benda Harian|Tas Carrier
+Tas Daypack Kuliah|0.45|Benda Harian|Tas Daypack
+Lem Tube Kecil|0.1|Alat Tulis & Kantor|Tube
+Tube Pasta Gigi|0.15|Benda Harian|Tube
+Tube Salep|0.08|Benda Harian|Tube
+Pisang Kepok|0.15|Buah & Sayur|=banana
+Pisang Raja|0.17|Buah & Sayur|=banana
+Pisang Cavendish|0.2|Buah & Sayur|=banana
+Mangga Arumanis|0.16|Buah & Sayur|=mango
+Mangga Gedong Gincu|0.12|Buah & Sayur|=mango
+Pepaya Bangkok|0.3|Buah & Sayur|=mango
+Nangka Muda|0.5|Buah & Sayur|=mango
+Stroberi Jumbo|0.05|Buah & Sayur|=berry:h
+Alpukat Hass|0.1|Buah & Sayur|=pear:h
+Buah Pir Kecil|0.08|Buah & Sayur|=pear:h
+Daun Jati|0.3|Buah & Sayur|=leaf
+Daun Talas|0.5|Buah & Sayur|=leaf
+Bunga Matahari|0.3|Buah & Sayur|=flower:h
+Bunga Tulip|0.4|Buah & Sayur|=flower:h
+Bunga Lili Putih|0.6|Buah & Sayur|=flower:h
+Telur Bebek|0.065|Buah & Sayur|=egg
+Telur Burung Unta|0.15|Buah & Sayur|=egg
+Kentang Besar|0.12|Buah & Sayur|=egg
+Bawang Merah|0.04|Buah & Sayur|=drop:h
+Bawang Putih|0.05|Buah & Sayur|=drop:h
+Ubi Jalar|0.15|Buah & Sayur|=egg
+Bus Mini|7|Kendaraan|=bus
+Bus Antarkota Double Decker|13|Kendaraan|=bus
+Sepeda BMX|1.1|Kendaraan|=bike
+Sepeda Gunung|1.75|Kendaraan|=bike
+Sepeda Motor Bebek|1.9|Kendaraan|=moto
+Skuter Listrik|1.1|Kendaraan|=moto
+Truk Molen|8|Kendaraan|=truck
+Truk Box|6.5|Kendaraan|=truck
+Kereta Cepat|200|Kendaraan|=train
+Lokomotif Uap|22|Kendaraan|=train
+Helikopter Tempur|15|Kendaraan|=heli
+Pesawat Baling-Baling|12|Kendaraan|=plane
+Pesawat Kargo|75|Kendaraan|=plane
+Kapal Penumpang|150|Kendaraan|=ship
+Kapal Nelayan|15|Kendaraan|=ship
+Roket Sounding|8|Kendaraan|=rocket:h
+Roket Mainan Air|0.3|Kendaraan|=rocket:h
+Gedung Bertingkat 10 Lantai|35|Landmark|=kiosk:h
+Mercusuar|30|Landmark|=tower:h
+Menara Air|25|Landmark|=tower:h
+Pagoda Shwedagon|99|Landmark|=pagoda:h
+Kuil Shinto|15|Landmark|=temple
+Pohon Jati|30|Landmark|=tree:h
+Pohon Bonsai|0.5|Landmark|=tree:h
+Pohon Bambu|12|Landmark|=tree:h
+Laptop Ultrabook|0.3|Elektronik & Gadget|=laptop
+Laptop Kerja 15 Inci|0.36|Elektronik & Gadget|=laptop
+Monitor Kantor 27 Inci|0.61|Elektronik & Gadget|=monitor
+TV Tabung Jadul|0.5|Elektronik & Gadget|=monitor
+Smartphone Budget|0.15|Elektronik & Gadget|=phone:h
+Smartphone Mini|0.13|Elektronik & Gadget|=phone:h
+Tablet Gambar|0.26|Elektronik & Gadget|=tablet:h
+Kamera Instan|0.12|Elektronik & Gadget|=camera
+Kamera Mirrorless Mungil|0.11|Elektronik & Gadget|=camera
+Router Gaming|0.3|Elektronik & Gadget|=router
+Mouse Ergonomis|0.12|Elektronik & Gadget|=mouse
+Papan Ketik Kompak|0.3|Elektronik & Gadget|=kb
+Bohlam Hemat Energi|0.12|Elektronik & Gadget|=bulb:h
+Kipas Dinding|0.4|Elektronik & Gadget|=fan
+Hair Dryer Travel|0.18|Elektronik & Gadget|=dryer
+Piring Sarapan|0.2|Benda Harian|Piring
+Piring Lebar Restoran|0.3|Benda Harian|Piring
+Piring Anak Kartun|0.18|Benda Harian|Piring
+Mangkuk Mie Ayam|0.17|Benda Harian|Mangkuk
+Mangkuk Es Krim|0.12|Benda Harian|Mangkuk
+Teko Kaca Teh|0.2|Benda Harian|Teko
+Teko Enamel Jadul|0.25|Benda Harian|Teko
+Gelas Kopi Kertas|0.14|Benda Harian|Gelas
+Gelas Plastik Bening|0.12|Benda Harian|Gelas
+Gelas Belimbing|0.1|Benda Harian|Gelas
+Bola Pingpong Pro|0.04|Geometri Sederhana|Bola
+Bola Bowling Anak|0.14|Geometri Sederhana|Bola
+Bola Disko|0.3|Geometri Sederhana|Bola
+Bola Bekel Kecil|0.025|Geometri Sederhana|Bola
+Botol Soda Kaca|0.2|Geometri Sederhana|Botol
+Botol Jamu Gendong|0.25|Geometri Sederhana|Botol
+Botol Kaca Kecil|0.08|Geometri Sederhana|Botol
+Botol Cuka|0.21|Geometri Sederhana|Botol
+Kartu Remi As Sekop|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Raja|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Miniatur|0.05|Geometri Sederhana|Kartu Remi
+Domino Merah|0.05|Geometri Sederhana|Domino
+Domino Akrilik|0.045|Geometri Sederhana|Domino
+Domino Jumbo|0.1|Geometri Sederhana|Domino
+Kucing Persia|0.45|Hewan|=cat
+Kucing Kampung|0.5|Hewan|=cat
+Anjing Golden Retriever|1.0|Hewan|=dog
+Anjing Pomeranian|0.25|Hewan|=dog
+Anjing Dachshund|0.6|Hewan|=dog
+Serigala Arktik|1.3|Hewan|=wolf
+Kuda Arab|2.3|Hewan|=horse
+Kuda Sumbawa|1.9|Hewan|=horse
+Sapi Bali|2.2|Hewan|=cow
+Kerbau Sawah|2.6|Hewan|=cow
+Babi Domestik|1.4|Hewan|=pig
+Domba Merino|1.3|Hewan|=sheep
+Rusa Merah|2.0|Hewan|=deer
+Kelinci Belanda|0.35|Hewan|=rabbit
+Monyet Orangutan Muda|0.8|Hewan|=monkey
+Unta Dromedaris|3.2|Hewan|=camel
+Singa Betina|2.0|Hewan|=lion
+Macan Tutul|1.8|Hewan|=tiger
+Beruang Kutub|2.6|Hewan|=bear
+Badak Putih|4.0|Hewan|=rhino
+Kuda Nil Muda|2.5|Hewan|=hippo
+Zebra Anak|1.5|Hewan|=zebra
+Gajah Asia|5.5|Hewan|=elephant
+Anak Gajah|3|Hewan|=elephant
+Ikan Koi|0.5|Hewan|=fish
+Ikan Nila|0.3|Hewan|=fish
+Ikan Pari|2|Hewan|=fish
+Ikan Hiu Martil|4|Hewan|=fish
+Burung Kakatua|0.45|Hewan|=bird:h
+Burung Kolibri|0.1|Hewan|=bird:h
+Burung Flamingo|1.3|Hewan|=bird:h
+Burung Beo|0.3|Hewan|=bird:h
+Kepiting Raja|1.5|Hewan|=crab
+Kura-Kura Brazil|0.2|Hewan|=turtle
+Penyu Belimbing|2|Hewan|=turtle
+Katak Hijau|0.07|Hewan|=frog
+Kupu-Kupu Malam|0.1|Hewan|=butter
+Kumbang Badak|0.08|Hewan|=bug
+Lebah Tukang Kayu|0.025|Hewan|=bug
+Semut Rangrang|0.008|Hewan|=bug
+Kecoa Raksasa|0.08|Hewan|=bug
+Cumi Bioluminesen|0.1|Hewan|=squid
+Jerapah Anak|2|Hewan|=giraffe:h
+Buaya Air Tawar|2.5|Hewan|=reptile
+Cicak Dinding|0.1|Hewan|=reptile
+Mug Retro|0.095|Benda Harian|=mug
+Mug Jumbo|0.13|Benda Harian|=mug
+Mangkuk Sereal|0.15|Benda Harian|=bowl
+Mangkuk Salad Kayu|0.3|Benda Harian|=bowl
+Panci Presto Besar|0.32|Benda Harian|=pot
+Panci Kukus|0.28|Benda Harian|=pot
+Wajan Anti Lengket|0.3|Benda Harian|=pan
+Wajan Besi Cor|0.35|Benda Harian|=pan
+Sendok Sup Stainless|0.26|Benda Harian|=spoon
+Sendok Bayi Silikon|0.14|Benda Harian|=spoon
+Garpu Buah|0.13|Benda Harian|=fork
+Garpu Barbeque|0.4|Benda Harian|=fork
+Kunci Kontak Motor|0.06|Benda Harian|=key
+Kunci Antik|0.12|Benda Harian|=key
+Kunci Lemari|0.05|Benda Harian|=key
+Trofi Piala Emas|0.4|Alat Olahraga|=trophy:h
+Trofi Mini|0.12|Alat Olahraga|=trophy:h
+Gitar Klasik Nilon|0.98|Alat Musik|Gitar
+Gitar Jumbo|1.05|Alat Musik|Gitar
+Ukulele Konser|0.58|Alat Musik|Gitar
+Ukulele Tenor|0.66|Alat Musik|Gitar
+Teko Keramik Motif|0.24|Benda Harian|Teko
+Teko Stainless Siul|0.22|Benda Harian|Teko
+Botol Wiski|0.3|Geometri Sederhana|Botol
+Botol Anggur Putih|0.29|Geometri Sederhana|Botol
+Botol Parfum Mewah|0.12|Geometri Sederhana|Botol
+Botol Air Galon Kecil|0.4|Geometri Sederhana|Botol
+Botol Kecap Manis|0.22|Geometri Sederhana|Botol
+Botol Teh Kemasan|0.22|Geometri Sederhana|Botol
+Botol Jus Jeruk|0.21|Geometri Sederhana|Botol
+Botol Vitamin|0.1|Geometri Sederhana|Botol
+Botol Plastik Bekas|0.28|Geometri Sederhana|Botol
+Kartu Remi Queen|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Jack|0.089|Geometri Sederhana|Kartu Remi
+Kartu Remi Belakang Motif|0.089|Geometri Sederhana|Kartu Remi
+Kartu Permainan Anak|0.08|Geometri Sederhana|Kartu Remi
+Domino Hijau|0.05|Geometri Sederhana|Domino
+Domino Kuning|0.05|Geometri Sederhana|Domino
+Domino Kayu Jati|0.06|Geometri Sederhana|Domino
+Domino Miniatur Travel|0.03|Geometri Sederhana|Domino
+Bola Sepak Retro|0.22|Geometri Sederhana|Bola
+Bola Futsal|0.2|Geometri Sederhana|Bola
+Bola Tangan|0.19|Geometri Sederhana|Bola
+Bola Rotan Sepak|0.13|Geometri Sederhana|Bola
+Bola Tolak Peluru|0.12|Geometri Sederhana|Bola
+Bola Kasti Kecil|0.065|Geometri Sederhana|Bola
+Bola Lampu Natal|0.07|Geometri Sederhana|Bola
+Bola Es Krim|0.06|Geometri Sederhana|Bola
+Candi Prambanan|47|Landmark|=stupa
+Candi Bentar|8|Landmark|=stupa
+Stupa Borobudur Puncak|35|Landmark|=stupa
+Replika Eiffel Souvenir|0.3|Landmark|=eiffel:h
+Menara Eiffel Mini|1.0|Landmark|=eiffel:h
+Menara Sky Tower|328|Landmark|=spire:h
+Menara Kembar Petronas|452|Landmark|=spire:h
+Tugu Monas Miniatur|0.5|Landmark|=monas:h
+Mercusuar Tanjung|40|Landmark|=light:h
+Mercusuar Mini Dekorasi|0.6|Landmark|=light:h
+Pohon Kelapa Gading|12|Landmark|=palm:h
+Pohon Palem Hias|3|Landmark|=palm:h
+Pohon Kurma|15|Landmark|=palm:h
+Kelapa Muda Utuh|0.25|Buah & Sayur|Bola
+Jambu Air|0.07|Buah & Sayur|Bola
+Jeruk Nipis|0.05|Buah & Sayur|Bola
+Buah Naga|0.12|Buah & Sayur|=egg
+Salak Pondoh|0.06|Buah & Sayur|=drop:h
+Manggis|0.06|Buah & Sayur|Bola
+Rambutan Segar|0.045|Buah & Sayur|Bola
+Apel Malang|0.07|Buah & Sayur|Bola
+Melon Emas|0.18|Buah & Sayur|Oval
+Terong Ungu|0.2|Buah & Sayur|=pear:h
+Wortel Segar|0.18|Buah & Sayur|=carrot
+Cabai Rawit|0.03|Buah & Sayur|=chili
+Jagung Manis|0.2|Buah & Sayur|=corn:h
+Timun|0.2|Buah & Sayur|Oval
+Labu Siam|0.15|Buah & Sayur|=pear:h
+Kentang Mini|0.05|Buah & Sayur|=egg
+Gitar Akustik Travel|0.75|Alat Musik|Gitar
+Gitar Elektrik Les Paul|1.0|Alat Musik|Gitar
+Ukulele Bariton|0.76|Alat Musik|Gitar
+Biola 4/4|0.6|Alat Musik|=violin
+Biola Listrik|0.6|Alat Musik|=violin
+Cello Elektrik|1.2|Alat Musik|=violin
+Kontra Bass|1.9|Alat Musik|=violin
+Piano Upright|1.5|Alat Musik|=piano
+Piano Grand Konser|2.9|Alat Musik|=piano
+Sepatu Lari|0.29|Pakaian & Aksesoris|=shoe
+Sepatu Pantai Karet|0.26|Pakaian & Aksesoris|=shoe
+Sepatu Boot Hujan|0.35|Pakaian & Aksesoris|=shoe
+Sepatu Bayi|0.12|Pakaian & Aksesoris|=shoe
+Topi Koboi|0.4|Pakaian & Aksesoris|=hat
+Topi Pet Sekolah|0.22|Pakaian & Aksesoris|=hat
+Helm Sepeda Balap|0.27|Pakaian & Aksesoris|=helmet
+Helm Astronot|0.4|Pakaian & Aksesoris|=helmet
+Kaos Bola|0.7|Pakaian & Aksesoris|=tshirt
+Kaos Oversize|0.78|Pakaian & Aksesoris|=tshirt
+Jaket Kulit|0.7|Pakaian & Aksesoris|=tshirt
+Payung Besar Pantai|2.0|Pakaian & Aksesoris|=umbrella
+Payung Pelangi Anak|0.55|Pakaian & Aksesoris|=umbrella
+Jam Dinding Kayu|0.35|Mebel & Perabot|=clock
+Jam Pasir|0.15|Mebel & Perabot|=hour:h
+Kursi Gaming|1.2|Mebel & Perabot|=chair:h
+Kursi Bayi Makan|0.9|Mebel & Perabot|=chair:h
+Kursi Plastik Stapel|0.8|Mebel & Perabot|=chair:h
+Meja Belajar Anak|1.0|Mebel & Perabot|=table
+Meja Bundar Kafe|0.7|Mebel & Perabot|=table
+Sofa Sudut|2.8|Mebel & Perabot|=sofa
+Kasur Bayi Box|1.2|Mebel & Perabot|=bed
+Tempat Tidur Susun|2.0|Mebel & Perabot|=bed
+Lemari Buku Tinggi|2.0|Mebel & Perabot|=bookcase:h
+Rak Sepatu Kecil|0.8|Mebel & Perabot|=bookcase:h
+Tangga Rumah Tangga|1.5|Mebel & Perabot|=ladder:h
+Tangga Teleskopik|3.8|Mebel & Perabot|=ladder:h
+Laptop Tipis|0.3|Elektronik & Gadget|=laptop
+TV Tabung 21 Inci|0.55|Elektronik & Gadget|=monitor
+Proyektor Mini|0.15|Elektronik & Gadget|=camera
+Kamera Polaroid|0.13|Elektronik & Gadget|=camera
+Kipas Meja Mini|0.2|Elektronik & Gadget|=fan
+Amplop Surat Kecil|0.16|Alat Tulis & Kantor|Amplop
+Amplop Cokelat Folio|0.35|Alat Tulis & Kantor|Amplop
+Paspor Indonesia|0.125|Benda Harian|Paspor
+Kalender Meja Bulanan|0.2|Mebel & Perabot|Kalender
+Kalender Dinding Jumbo|0.6|Mebel & Perabot|Kalender
+Jam Pasir Kayu|0.2|Mebel & Perabot|=hour:h
+Jam Pasir Mini|0.08|Mebel & Perabot|=hour:h
+Wortel Jumbo|0.25|Buah & Sayur|=carrot
+Jagung Bakar|0.22|Buah & Sayur|=corn:h
+Cabai Merah Keriting|0.12|Buah & Sayur|=chili
+Terompet Jazz|0.5|Alat Musik|Terompet
+Sumpit Stainless|0.24|Benda Harian|Sumpit
+Sumpit Kayu Jepang|0.21|Benda Harian|Sumpit
+Dasi Kupu-Kupu Formal|0.12|Pakaian & Aksesoris|Dasi
+Dasi Panjang Kantor|0.15|Pakaian & Aksesoris|Dasi
+Masker Bedah Hijau|0.18|Benda Harian|Masker
+Masker KN95|0.15|Benda Harian|Masker
+Ritsleting Plastik 30 cm|0.3|Pakaian & Aksesoris|Ritsleting
+Ponco Jas Hujan Anak|0.9|Pakaian & Aksesoris|Jas Hujan
+Mistar Segitiga 45 Derajat|0.25|Alat Tulis & Kantor|Mistar Segitiga
+Busur Derajat Besar|0.18|Alat Tulis & Kantor|Busur
+Stapler Mini|0.09|Alat Tulis & Kantor|Stapler
+Stapler Besar Kantor|0.2|Alat Tulis & Kantor|Stapler
+Lem Cair Kaca|0.09|Alat Tulis & Kantor|Lem Cair
+Kalkulator Saku|0.11|Elektronik & Gadget|Kalkulator
+Remote AC Sharp|0.17|Elektronik & Gadget|Remote
+Kabel USB-C Panjang|1.0|Elektronik & Gadget|Kabel
+Kabel Charger iPhone|1.0|Elektronik & Gadget|Kabel
+Kartu SD Mini|0.015|Elektronik & Gadget|Memory Card
+Walkie Talkie Anak|0.14|Elektronik & Gadget|Walkie
+Panel Surya Atap|1.65|Elektronik & Gadget|Panel Surya
+Soundbar Mini|0.5|Elektronik & Gadget|Soundbar
+Pintu Kayu Jati|2.1|Bangunan & Arsitektur|Pintu
+Pintu Kamar Tidur|2.0|Bangunan & Arsitektur|Pintu
+Kloset Duduk Modern|0.72|Bangunan & Arsitektur|Kloset
+Pipa PVC 4 Inci|4.0|Bangunan & Arsitektur|Pipa
+Besi Beton 10mm|12.0|Bangunan & Arsitektur|Besi Beton
+Mata Bor Besi|0.13|Peralatan & Perkakas|Mata Bor
+Linggis Baja|1.2|Peralatan & Perkakas|Linggis
+Keranjang Piknik|0.45|Benda Harian|Keranjang
+Keranjang Rotan|0.4|Benda Harian|Keranjang
+Bet Pingpong Profesional|0.26|Alat Olahraga|Bet
+Bet Badminton Pemula|0.68|Alat Olahraga|Bet
+Medali Emas Olimpiade|0.085|Alat Olahraga|Medali
+Lego Brick 2x2|0.016|Alat Olahraga|Lego
+Lego Plate 4x8|0.064|Alat Olahraga|Lego
+Puzzle 500 Keping|0.5|Alat Olahraga|Puzzle
+Barbell Plate 20 kg|0.45|Alat Olahraga|Barbell
+Tenda Kemah Kecil|2.0|Bangunan & Arsitektur|Tenda
+Tenda Pesta Besar|6.0|Bangunan & Arsitektur|Tenda
+Sleeping Bag Ringan|1.9|Benda Harian|Sleeping Bag
+Cokelat Batang Susu|0.2|Makanan|Cokelat
+Sosis Bratwurst|0.18|Makanan|Sosis
+Semangka Mini|0.2|Buah & Sayur|Semangka
+Timun Jepang|0.22|Buah & Sayur|Timun
+Jaring Gawang Futsal|3.0|Alat Olahraga|Jaring
+Jaring Voli Pantai|8.5|Alat Olahraga|Jaring
+Jaring Nyamuk Jendela|1.0|Benda Harian|Jaring
+Lilin Ulang Tahun|0.06|Benda Harian|Lilin
+Lilin Aromaterapi|0.09|Benda Harian|Lilin
+Lipstik Matte|0.075|Benda Harian|Lipstik
+Korek Api Gas Klasik|0.08|Benda Harian|Korek Api Gas
+Penggaris Mistar Segitiga 30|0.3|Alat Tulis & Kantor|Mistar Segitiga
+Gorden Lipit Jendela|2.0|Mebel & Perabot|Gorden
+Handuk Kecil Wajah|0.35|Benda Harian|Handuk
+Sajadah Tebal Turki|1.2|Benda Harian|Sajadah
+Kertas Gambar A3|0.42|Alat Tulis & Kantor|Kertas A4
+Tyrannosaurus Rex|12|Hewan|=trex
+Paus Orca|7|Hewan|=orca
+Penguin Kecil|0.33|Hewan|=penguin:h
+Kaktus Saguaro|12|Landmark|=cactus:h
+Kaktus Hias Mini|0.12|Buah & Sayur|=cactus:h
+Es Krim Cone|0.18|Makanan|=icecream:h
+Gitar Folk Dreadnought|1.04|Alat Musik|=guitar2
+Jet Penumpang|37|Kendaraan|=jetp
+Bintang Laut|0.2|Hewan|=starfish
+Jamur Champignon|0.06|Buah & Sayur|=mushroom:h
+Jamur Payung|0.25|Buah & Sayur|=mushroom:h
+Brachiosaurus|22|Hewan|=brachio
+Kucing Duduk|0.3|Hewan|=catsit:h
+Bebek Kolam|0.5|Hewan|=duck
+Siput Taman|0.05|Hewan|=snail
+Semut Pekerja|0.008|Hewan|=ant
+Kincir Angin Belanda|25|Landmark|=windmill:h
+Menara Jam Big Ben|96|Landmark|=bigben:h
+Kastil Abad Pertengahan|60|Landmark|=castle
+Lampu Jalan|5|Landmark|=streetlamp:h
+Kuda Laut|0.12|Hewan|=seahorse:h
+Sepatu Hak Tinggi|0.26|Pakaian & Aksesoris|=heel
+Pesawat Kertas|0.25|Benda Harian|=paperplane
+Jam Kakek Antik|2.0|Mebel & Perabot|=grandclock:h
+Kursi Goyang|1.0|Mebel & Perabot|=rocker:h
+Tulip Merah|0.35|Buah & Sayur|=tulip:h
+Rumah Gadang|20|Landmark|=gadang
+Pabrik Cerobong|40|Landmark|=factory:h
+Jangkrik Sawah|0.025|Hewan|=cricket
+Lalat Hijau|0.008|Hewan|=fly
+Kumbang Kelapa|0.04|Hewan|=beetle
+Kelabang Raksasa|0.25|Hewan|=centi
+Pisang Susu|0.12|Buah & Sayur|=banana
+Burung Gereja Kota|0.15|Hewan|=bird2:h
+Mobil Sedan|4.6|Kendaraan|=car|1
+Mobil Mini Hatchback|3.6|Kendaraan|=car|1
+Taksi Kuning|4.5|Kendaraan|=car|1
+Mobil Sport Coupe|4.4|Kendaraan|=car|1
+Laba-Laba Taman|0.03|Hewan|=spider|1
+Laba-Laba Rumah|0.012|Hewan|=spider|1
+Tarantula|0.15|Hewan|=spider|1
+Jangkar Kapal|3.5|Kendaraan|=anchor:h|1
+Jangkar Perahu Kecil|0.6|Kendaraan|=anchor:h|1
+Lonceng Gereja|1.2|Benda Harian|=bell:h|1
+Lonceng Sapi|0.15|Benda Harian|=bell:h|1
+Mahkota Raja|0.22|Pakaian & Aksesoris|=crown|1
+Mahkota Pengantin|0.18|Pakaian & Aksesoris|=crown|1
+Balon Udara|30|Kendaraan|=hotair:h|1
+Balon Udara Mini|3|Kendaraan|=hotair:h|1
+Kerang Scallop|0.12|Hewan|=scallop|1
+Kerang Raksasa|1.2|Hewan|=scallop|1
+Kerang Kipas|0.09|Hewan|=scallop|1
+Bulan Sabit Hiasan|0.3|Benda Harian|=crescent:h|1
+Daun Sirih|0.12|Buah & Sayur|=leafheart|1
+Daun Waru|0.2|Buah & Sayur|=leafheart|1
+Anjing Beagle|0.7|Hewan|=dog|1
+Anjing Bulldog|0.6|Hewan|=dog|1
+Kuda Sandel|2.0|Hewan|=horse|1
+Sapi Madura|2.1|Hewan|=cow|1
+Domba Ekor Gemuk|1.3|Hewan|=sheep|1
+Kelinci Lop|0.4|Hewan|=rabbit|1
+Rusa Sambar|2.4|Hewan|=deer|1
+Pisang Tanduk|0.3|Buah & Sayur|=banana|1
+Pisang Barangan|0.14|Buah & Sayur|=banana|1
+Jangkrik Kalung|0.03|Hewan|=cricket|1
+Lebah Kelulut|0.006|Hewan|=bee|1
+Kecoa Amerika|0.04|Hewan|=roach|1
+Nyamuk Aedes|0.005|Hewan|=mosq|1
+Kumbang Kura-Kura|0.01|Hewan|=beetle|1
+Burung Kutilang|0.2|Hewan|=bird2:h|1
+Gitar Western|1.0|Alat Musik|=guitar2|1
+Tulip Kuning|0.4|Buah & Sayur|=tulip:h|1
+Bebek Mandarin|0.45|Hewan|=duck|1
+Diplodocus|26|Hewan|=brachio|1
+Allosaurus|9|Hewan|=trex|1
+Airbus A330|63.7|Kendaraan|=jetp|1
+Penguin Adelie|0.7|Hewan|=penguin:h|1
+`;
+/* siluet realistis tambahan */
+Object.assign(TPL,{
+trex:T('M0,70L40,50L74,30C90,24 108,22 124,22L140,16L146,4L184,6L198,18L198,26L180,30L186,34L160,42L156,54L166,62L160,64L150,60L144,72L136,84L140,100L156,108L156,112L120,112L122,104L112,86L100,78L92,100L104,108L104,112L68,112L72,102L68,84L56,74L26,78Z',200,112),
+orca:T('M2,62C10,48 30,44 50,44L66,14L76,44C110,44 150,50 172,62L196,44L194,62L198,82L172,68C150,78 110,84 76,82C40,86 14,80 2,62Z M66,76L92,78L86,98Z',200,100),
+penguin:T('M50,4C66,4 72,18 70,30C86,50 90,80 84,96C76,102 60,100 50,100C40,100 24,102 16,96C10,80 14,50 30,30C28,18 34,4 50,4Z M70,20L86,24L70,28Z M20,44L18,70L4,76Z M80,44L96,76L82,70Z',100,100),
+cactus:F(100,100,p=>{p.roundRect(36,0,28,100,14);p.rect(36,86,28,14);p.roundRect(8,30,14,44,7);p.roundRect(8,62,44,14,7);p.roundRect(78,18,14,46,7);p.roundRect(56,52,36,14,7)}),
+icecream:F(60,100,p=>{p.addPath(new Path2D('M8,48L52,48L30,100Z'));circ(p,30,30,24);p.roundRect(4,42,52,10,5);circ(p,30,5,4)}),
+guitar2:F(100,36,p=>{E(p,78,18,22,17);E(p,54,18,15,12);p.rect(14,15,44,6);p.addPath(new Path2D('M0,12L16,10L16,22L0,20Z'));circ(p,80,18,6,1)}),
+jetp:F(200,90,p=>{p.addPath(new Path2D('M2,46C6,40 20,36 40,35L168,35C186,35 198,42 200,46C198,52 186,57 168,57L40,57C20,56 6,52 2,46Z M6,38L16,4L36,4L56,36Z M92,54L126,54L148,88L132,88Z'));E(p,116,66,15,7)}),
+starfish:F(100,91,p=>{for(let i=0;i<10;i++){const r=i%2?20:48,a=-Math.PI/2+i*Math.PI/5,x=50+r*Math.cos(a),y=52+r*Math.sin(a);i?p.lineTo(x,y):p.moveTo(x,y)}p.closePath()}),
+mushroom:T('M4,46C4,18 28,2 50,2C72,2 96,18 96,46C96,50 90,52 84,52L16,52C10,52 4,50 4,46Z M36,50L64,50L70,92C70,98 62,100 50,100C38,100 30,98 30,92Z',100,100)
+});
+MAPS.unshift([/^Tyrannosaurus/,'trex'],[/^Paus Orca/,'orca'],[/^Penguin/,'penguin','h'],[/^Kaktus/,'cactus','h'],[/^Es Krim Cone/,'icecream','h'],[/^Gitar Folk/,'guitar2'],[/^Jet Penumpang/,'jetp'],[/^Bintang Laut/,'starfish'],[/^Jamur/,'mushroom','h']);
+/* siluet realistis batch 2 */
+Object.assign(TPL,{
+brachio:F(182,120,p=>{E(p,90,62,58,28);p.addPath(new Path2D('M112,50L148,6L160,10L136,62Z M40,48L44,76L2,100L2,92Z'));E(p,166,10,14,7);[[52,80,16],[74,84,14],[106,84,14],[128,80,16]].forEach(([x,y,w])=>p.rect(x,y,w,120-y))}),
+catsit:F(58,100,p=>{E(p,30,72,22,28);circ(p,30,30,16);p.addPath(new Path2D('M16,22L18,2L28,16Z M32,16L42,2L44,22Z'));Q(p,46,94,54,94,6);Q(p,54,94,54,56,6)}),
+duck:F(100,80,p=>{E(p,44,54,36,22);p.addPath(new Path2D('M10,50L0,36L14,40Z M86,18L100,24L86,28Z'));Q(p,66,44,74,26,12);circ(p,76,20,12);Q(p,36,74,36,80,3);Q(p,50,74,50,80,3)}),
+snail:F(100,70,p=>{circ(p,42,36,30);circ(p,42,36,18,1);circ(p,42,36,8);p.roundRect(0,58,100,12,6);Q(p,88,60,88,30,9);Q(p,86,30,82,12,3);Q(p,92,30,96,12,3)}),
+ant:F(100,60,p=>{E(p,86,30,10,9);E(p,62,30,10,8);E(p,28,30,22,14);Q(p,70,30,78,30,4);Q(p,50,30,62,30,4);[[58,48],[62,58],[68,48]].forEach(([x,y],i)=>{Q(p,62,34,x+(i-1)*8,y+(i==1?0:8),2.5)});Q(p,90,24,98,6,2);Q(p,92,28,99,14,2)}),
+windmill:F(100,100,p=>{p.addPath(new Path2D('M34,40L66,40L76,100L24,100Z M30,40L50,22L70,40Z'));[[19,5],[81,67],[19,67],[81,5]].forEach(([x,y])=>Q(p,50,36,x,y,7))}),
+bigben:F(40,100,p=>{p.addPath(new Path2D('M20,0L25,20L15,20Z'));p.rect(10,20,20,14);p.rect(6,34,28,22);circ(p,20,45,8,1);p.rect(10,56,20,34);p.rect(8,90,24,10);p.rect(4,30,4,26);p.rect(32,30,4,26)}),
+castle:F(100,80,p=>{p.rect(10,40,80,40);p.rect(0,22,22,58);p.rect(78,22,22,58);p.rect(38,8,24,72);[0,8,16,78,86,94].forEach(x=>p.rect(x,16,6,6));[38,47,56].forEach(x=>p.rect(x,2,6,6));[24,68].forEach(x=>p.rect(x,34,8,6));HL(p,24,56,12,24);HL(p,64,56,12,24);HL(p,46,20,8,14)}),
+streetlamp:F(60,100,p=>{p.rect(10,10,4,90);p.rect(6,92,12,8);p.rect(8,70,8,3);Q(p,12,10,44,10,4);p.addPath(new Path2D('M36,12L56,12L52,26L40,26Z M34,12L46,4L58,12Z'))})
+});
+MAPS.unshift([/^Brachiosaurus/,'brachio'],[/^Kucing Duduk/,'catsit','h'],[/^Bebek Kolam/,'duck'],[/^Siput/,'snail'],[/^Semut Pekerja/,'ant'],[/^Kincir Angin/,'windmill','h'],[/Big Ben/,'bigben','h'],[/^Kastil/,'castle'],[/^Lampu Jalan/,'streetlamp','h']);
+/* siluet realistis batch 3 */
+Object.assign(TPL,{
+seahorse:F(60,94,p=>{circ(p,30,14,11);Q(p,36,14,56,12,5);p.addPath(new Path2D('M20,40L20,56L8,48Z'));E(p,34,44,14,18);Q(p,30,22,34,40,16);Q(p,32,58,26,78,9);circ(p,22,84,10);circ(p,22,84,4,1)}),
+heel:F(100,70,p=>p.addPath(new Path2D('M2,8L24,4C28,28 50,42 76,46C92,48 100,52 100,58L100,62L60,62L56,62C44,62 34,52 26,48L20,70L8,70L4,44C2,30 2,18 2,8Z'))),
+paperplane:F(100,60,p=>p.addPath(new Path2D('M100,30L2,4L28,30L2,56Z'))),
+grandclock:F(50,100,p=>{p.roundRect(6,2,38,34,8);p.rect(10,30,30,70);p.rect(6,90,38,10);circ(p,25,20,10,1);HL(p,18,48,14,30)}),
+rocker:F(90,100,p=>{Q(p,22,58,70,58,6);Q(p,24,58,18,6,6);Q(p,30,60,30,92,5);Q(p,64,60,64,92,5);Q(p,66,42,66,60,4);Q(p,60,42,76,42,4);p.addPath(new Path2D('M2,84C20,94 70,94 88,84L88,88C70,100 20,100 2,88Z'))}),
+tulip:F(40,100,p=>{Q(p,20,100,20,44,3.5);p.addPath(new Path2D('M20,90C4,86 2,66 8,54C16,62 24,74 20,90Z M6,8L14,20L20,4L26,20L34,8C38,30 32,46 20,46C8,46 2,30 6,8Z'))}),
+gadang:F(100,80,p=>{p.addPath(new Path2D('M6,2C10,18 22,22 34,24L66,24C78,22 90,18 94,2C98,16 96,34 84,44L16,44C4,34 2,16 6,2Z'));p.rect(12,44,76,20);[16,40,56,80].forEach(x=>p.rect(x,64,5,16));HL(p,44,48,12,16)}),
+factory:F(100,90,p=>{p.addPath(new Path2D('M0,90L0,54L16,40L16,54L32,40L32,54L48,40L48,54L64,40L64,90Z'));p.rect(70,14,10,76);p.rect(86,24,10,66);p.rect(68,10,14,5);p.rect(84,20,14,5);HL(p,24,68,14,22);HL(p,6,62,10,8)})
+});
+MAPS.unshift([/^Kuda Laut/,'seahorse','h'],[/^Sepatu Hak/,'heel'],[/^Pesawat Kertas/,'paperplane'],[/^Jam Kakek/,'grandclock','h'],[/^Kursi Goyang/,'rocker','h'],[/^(Bunga )?Tulip/,'tulip','h'],[/^Rumah Gadang/,'gadang'],[/^Pabrik/,'factory','h']);
+/* batch 4: serangga, pisang, burung */
+Object.assign(TPL,{
+cricket:F(100,56,p=>{E(p,48,26,30,13);E(p,80,28,12,10);Q(p,88,22,100,10,1.8);Q(p,88,22,72,3,1.8);Q(p,40,30,14,16,9);Q(p,14,16,4,50,3.5);Q(p,4,50,10,54,2.5);Q(p,56,36,62,52,3);Q(p,62,52,70,54,2.5);Q(p,72,36,80,52,3);Q(p,80,52,88,54,2.5);Q(p,24,30,6,32,1.6)}),
+hopper:F(100,50,p=>{E(p,36,22,30,7);E(p,68,22,12,9);E(p,84,24,8,8);Q(p,88,18,98,6,1.8);Q(p,54,26,10,14,7);Q(p,10,14,22,46,3);Q(p,22,46,32,48,2.5);Q(p,62,30,68,48,3);Q(p,74,30,80,48,3)}),
+fly:F(100,60,p=>{E(p,60,28,22,16);E(p,30,32,26,14);circ(p,86,30,11);p.addPath(new Path2D('M70,18L62,26L24,10L26,2Z'));Q(p,56,40,50,58,2);Q(p,64,40,68,58,2);Q(p,74,40,84,58,2);Q(p,94,36,100,42,2)}),
+bee:F(100,58,p=>{E(p,38,30,28,16);circ(p,68,28,13);circ(p,86,30,9);p.addPath(new Path2D('M12,26L12,34L0,30Z M58,18L54,22L40,6L44,0Z M62,16L72,0L76,6L62,22Z'));Q(p,56,42,54,56,2);Q(p,68,42,70,56,2);Q(p,88,24,96,14,1.6);HL(p,30,16,4,28);HL(p,44,16,4,28)}),
+roach:F(100,60,p=>{E(p,44,30,34,16);E(p,74,30,14,12);E(p,88,30,6,6);Q(p,90,28,100,4,1.5);Q(p,90,32,100,56,1.5);[[68,20,74,4],[50,16,46,2],[34,18,22,4]].forEach(([a,b,c,d])=>{Q(p,a,b,c,d,2.2);Q(p,a,60-b,c,60-d,2.2)})}),
+mosq:F(100,70,p=>{Q(p,6,40,54,34,7);E(p,62,32,9,8);circ(p,74,30,5);Q(p,78,30,100,26,1.6);p.addPath(new Path2D('M60,26L30,10L32,4L66,22Z'));Q(p,56,38,44,66,1.6);Q(p,44,66,40,70,1.6);Q(p,62,38,64,68,1.6);Q(p,68,38,82,64,1.6);Q(p,82,64,86,68,1.6)}),
+beetle:F(100,60,p=>{p.addPath(new Path2D('M8,44C8,18 30,8 52,10C66,12 76,22 80,44Z M86,30L98,14L100,22L92,34Z'));E(p,82,38,12,10);Q(p,30,44,22,58,3);Q(p,50,44,50,58,3);Q(p,70,44,80,58,3)}),
+centi:F(100,60,p=>{for(let i=0;i<14;i++){const x=8+i*6.4;circ(p,x,30,5);Q(p,x,28,x-3,10,1.4);Q(p,x,32,x-3,50,1.4)}circ(p,94,30,6);Q(p,96,26,100,12,1.5);Q(p,96,34,100,48,1.5)}),
+mite:F(100,60,p=>{E(p,50,30,14,12);circ(p,66,30,6);[-1,1].forEach(s=>[0,1,2,3].forEach(i=>{const h=[44,50,56,62][i],k=[30,40,60,70][i],f=[14,34,66,86][i];Q(p,h,30,k,30+s*22,2);Q(p,k,30+s*22,f,30+s*28,2)}))}),
+banana:F(100,54,p=>p.addPath(new Path2D('M8,2L18,2L20,12C30,36 56,42 84,26L96,22L99,28L92,38C60,62 22,56 6,22C4,12 6,6 8,2Z'))),
+bird2:F(100,70,p=>{p.addPath(new Path2D('M0,52L34,42C38,28 54,22 66,26C68,16 76,8 86,10C90,11 92,14 92,18L100,22L92,24C90,32 84,40 76,46C66,58 50,62 36,58L8,54Z'));Q(p,48,60,48,70,2.5);Q(p,56,60,58,70,2.5)})
+});
+MAPS.unshift([/Jangkrik/,'cricket'],[/^Belalang/,'hopper'],[/^Lalat/,'fly'],[/^Lebah/,'bee'],[/^Kecoa/,'roach'],[/^Nyamuk/,'mosq'],[/^Kumbang/,'beetle'],[/^Kelabang/,'centi'],[/^Tungau/,'mite'],[/^Semut/,'ant'],[/Merpati|Pipit|Beo|Gereja/,'bird2','h'],[/^Bebek Peking/,'duck'],[/^Pisang/,'banana']);
+/* batch 5 */
+Object.assign(TPL,{
+car:F(130,52,p=>{p.addPath(new Path2D('M2,42L4,32C4,28 12,26 26,24L42,10C46,6 52,4 60,4L82,4C90,4 96,8 102,20L118,24C126,26 128,32 128,42Z'));circ(p,30,42,9);circ(p,98,42,9);HL(p,46,9,14,13);HL(p,64,9,14,13)}),
+spider:F(90,76,p=>{E(p,26,38,22,17);circ(p,54,38,10);[-1,1].forEach(s=>[0,1,2,3].forEach(i=>{const h=[56,54,52,50][i],k=h+[14,6,-6,-14][i],f=h+[26,12,-14,-26][i];Q(p,h,38,k,38+s*18,2);Q(p,k,38+s*18,f,38+s*32,2)}))}),
+anchor:F(60,100,p=>{p.rect(27,14,6,70);p.rect(14,22,32,5);circ(p,30,8,7);circ(p,30,8,3.5,1);p.addPath(new Path2D('M56,62C56,88 42,98 30,98C18,98 4,88 4,62L14,70C16,80 22,86 26,86L34,86C38,86 44,80 46,70Z'))}),
+bell:F(80,90,p=>{p.addPath(new Path2D('M40,4C44,4 46,8 46,12C62,16 66,34 66,52C66,62 72,68 78,74L78,80L2,80L2,74C8,68 14,62 14,52C14,34 18,16 34,12C34,8 36,4 40,4Z'));circ(p,40,84,6)}),
+crown:F(100,60,p=>p.addPath(new Path2D('M4,60L0,14L26,34L50,4L74,34L100,14L96,60Z'))),
+hotair:F(80,106,p=>{p.addPath(new Path2D('M40,2C66,2 78,22 76,44C74,58 58,68 50,72L30,72C22,68 6,58 4,44C2,22 14,2 40,2Z'));p.rect(32,88,16,18);Q(p,32,72,32,88,1.6);Q(p,48,72,48,88,1.6)}),
+scallop:F(100,90,p=>{p.addPath(new Path2D('M50,90L14,66C4,52 4,34 14,22C26,8 40,2 50,2C60,2 74,8 86,22C96,34 96,52 86,66Z'));[49,30,68].forEach(x=>HL(p,x,18,2,50))}),
+crescent:F(60,100,p=>p.addPath(new Path2D('M60,4C30,4 6,24 6,50C6,76 30,96 60,96C44,86 34,70 34,50C34,30 44,14 60,4Z'))),
+leafheart:F(100,100,p=>p.addPath(new Path2D('M50,98C30,84 2,62 4,34C6,12 34,4 50,30C66,4 94,12 96,34C98,62 70,84 50,98Z')))
+});
+/* batch 6: hewan & perkakas lebih realistis */
+Object.assign(TPL,{
+dog:T('M10,24C20,18 40,20 58,20L68,14L74,10L80,8L92,16L100,22L98,30L88,32L82,34C80,44 80,50 76,54L78,68L68,68L66,56C58,54 46,54 38,54L40,68L28,68L26,58L24,56L18,44C10,38 8,30 10,24Z M74,12L76,2L84,10Z M12,26L2,12L6,10L16,22Z',100,68,p=>{Q(p,60,50,60,66,6);Q(p,30,50,32,66,6)}),
+horse:T('M14,34C24,28 50,30 70,30L84,24L94,10L98,4L102,10L108,14L118,32L118,40L108,42L102,36L94,40L88,52C90,58 92,62 90,68L92,100L86,100L82,80L80,72C70,70 60,70 50,70L52,86L54,100L44,100L42,90L38,76C28,70 14,60 12,46Z M14,34L12,46L10,64L4,66L6,44Z',118,100,p=>{Q(p,44,72,40,98,7);Q(p,76,72,74,98,6)}),
+cat:T('M8,22C16,12 40,14 62,14L72,12L80,8L88,10L94,18L92,24L84,26L80,34L82,58L72,58L70,44C60,42 50,42 40,42L38,58L28,58L30,46L16,44C8,40 6,30 8,22Z M80,8L82,0L88,8Z M86,9L92,2L94,14Z',96,58,p=>{Q(p,10,26,2,10,4);Q(p,62,42,62,58,5);Q(p,46,42,46,58,5)}),
+cow:T('M14,28L24,20L72,22L88,20L98,24L104,18L112,22L118,34L116,44L106,46L98,42L92,52L92,72L96,90L88,90L86,76L76,72C66,76 50,76 42,72L38,80L30,78L30,72L32,90L22,90L20,70L14,60L12,40Z M102,18L98,8L106,16Z M96,22L88,24L94,30Z',118,90,p=>{Q(p,14,30,8,70,2.5);Q(p,80,74,82,90,7);Q(p,44,74,46,90,7)}),
+elephant:T('M18,30C30,14 70,10 96,20L104,14C112,10 118,18 116,30L118,42C122,60 122,80 112,92L108,88C114,76 112,62 108,54L102,62L104,100L86,100L84,74C76,76 60,76 50,74L52,100L32,100L28,72C20,64 14,46 18,30Z',122,100,p=>{E(p,94,40,12,18);Q(p,16,34,10,66,3);Q(p,106,54,120,62,3)}),
+giraffe:T('M6,100C10,88 30,84 50,84L62,80L74,20L80,6L96,10L98,18L88,22L80,26L84,80C86,100 84,112 80,120L82,200L72,200L70,128C56,118 40,118 20,116L22,200L12,200L10,124C4,118 2,108 6,100Z M80,6L80,0L84,6Z M78,10L76,16L70,8Z',98,200,p=>Q(p,8,100,2,140,2.5)),
+hammer:T('M0,20L74,19L74,27L0,28Z M72,20L84,10L84,2L98,2L98,42L84,42L84,34L72,26Z',100,44),
+wrench:F(100,36,p=>{p.addPath(new Path2D('M0,6L22,6C28,6 30,12 34,14L80,14L80,22L34,22C30,24 28,30 22,30L0,30L0,22L14,22L14,14L0,14Z'));RG(p,88,18,12,6)}),
+knife:T('M0,24C20,22 44,14 60,8L60,30C40,32 16,30 0,24Z M60,10L98,12L100,18L98,26L60,28Z',100,34),
+scissors:F(100,60,p=>{Q(p,36,30,100,12,6);Q(p,36,30,100,48,6);Q(p,36,30,16,50,5);Q(p,36,30,16,10,5);RG(p,10,50,10,4);RG(p,10,10,10,4);circ(p,36,30,4.5)}),
+saw:F(100,38,p=>{p.moveTo(0,12);p.lineTo(72,4);p.lineTo(72,30);for(let i=18;i>0;i--){const x=i*4;p.lineTo(x-2,22+8*x/72+3);p.lineTo(x-4,22+8*(x-4)/72)}p.closePath();p.addPath(new Path2D('M72,2L98,2L100,8L100,30L92,36L72,32Z'));HL(p,80,10,14,14)}),
+axe:T('M0,20L70,19L70,29L0,30Z M68,16L82,12C90,2 98,2 100,6L100,44C98,48 90,48 82,38L68,32Z',100,50),
+screwdriver:T('M2,18C2,6 12,4 30,6L42,8L42,28L30,30C12,32 2,30 2,18Z M42,12L50,12L50,24L42,24Z M50,16L92,16L100,12L100,24L92,20L50,20Z',100,34),
+pliers:F(100,52,p=>{Q(p,42,26,2,20,8);Q(p,42,26,2,32,8);Q(p,42,26,100,10,9);Q(p,42,26,100,42,9);circ(p,42,26,5)}),
+shovel:F(100,44,p=>{RG(p,10,20,10,4);Q(p,14,22,70,22,5);p.addPath(new Path2D('M68,10C76,4 92,10 100,22C92,34 76,40 68,34Z'))}),
+brush:T('M0,16C10,12 30,14 44,16L44,24C30,26 10,28 0,24Z M44,12L58,12L58,28L44,28Z M58,10L84,6C96,8 100,14 100,20C100,26 96,32 84,34L58,30Z',100,40),
+pdrill:T('M14,6L70,6L70,30L14,30Z M70,10L92,12L92,26L70,28Z M92,17L100,17L100,20L92,20Z M30,30L52,30L48,64L30,64Z M26,62L56,62L56,70L26,70Z',100,70),
+bit:F(100,20,p=>{p.rect(0,7,30,6);p.rect(30,4,62,12);p.addPath(new Path2D('M92,4L100,10L92,16Z'));for(let x=34;x<88;x+=9){p.moveTo(x,6);p.lineTo(x+3,14);p.lineTo(x+5,14);p.lineTo(x+2,6);p.closePath()}}),
+crowbar:F(100,32,p=>{Q(p,6,14,90,14,7);p.addPath(new Path2D('M0,8L12,10L12,18L0,20Z M86,10C98,8 100,22 96,30L90,28C92,22 92,16 86,18Z'))})
+});
+TPL.wolf=TPL.dog;TPL.zebra=TPL.horse;TPL.lion=TPL.tiger=TPL.cat;
+MAPS.unshift([/^Mata Bor/,'bit'],[/^Bor Listrik/,'pdrill'],[/^Tang/,'pliers'],[/^(Sekop|Cangkul)/,'shovel'],[/^Kuas/,'brush']);
+/* batch 7: hewan lanjutan & motor */
+Object.assign(TPL,{
+pig:T('M8,20C20,10 50,10 70,14L80,14C86,10 90,12 92,16L100,26L100,34L92,36L84,40L78,44L80,60L70,60L68,48C60,50 40,50 34,48L34,60L24,60L22,46C12,40 6,30 8,20Z M86,12L90,4L94,14Z',100,60,p=>{Q(p,8,22,2,14,2.5);Q(p,62,50,62,60,6);Q(p,30,50,30,60,6)}),
+sheep:F(100,74,p=>{[[30,30,18],[48,24,18],[66,28,18],[40,40,16],[58,42,16],[22,42,14],[76,42,12]].forEach(a=>circ(p,...a));p.addPath(new Path2D('M78,30L92,28L98,40L94,50L86,48L80,42Z M80,34L80,42L72,38Z'));[[28,50],[40,52],[62,52],[74,50]].forEach(([x,y])=>Q(p,x,y,x,74,5))}),
+bear:T('M6,36C8,22 26,14 42,12L56,8L66,12L72,22L80,20L90,26L100,36L98,42L90,42L84,46L80,50L84,72L70,72L68,58C58,60 40,60 32,58L34,72L18,72L16,56C8,52 4,44 6,36Z',100,72,p=>{circ(p,78,20,4.5);Q(p,62,58,64,72,10);Q(p,26,58,26,72,10)}),
+camel:T('M12,48L24,42L40,44L46,30C52,20 62,22 66,34L72,42L84,26L90,12L96,8L106,14L108,20L104,24L96,22L92,28L88,44L86,62L90,110L82,110L78,78L62,68L56,76L58,110L50,110L44,80C24,74 14,64 12,48Z',108,110,p=>Q(p,12,50,8,70,2.5)),
+rabbit:F(80,80,p=>{E(p,28,56,22,22);E(p,44,48,20,18);E(p,62,36,13,11);p.addPath(new Path2D('M72,32L80,36L72,40Z M56,28L52,2L62,4L64,26Z M62,27L66,4L74,8L70,28Z'));circ(p,8,54,5);Q(p,58,48,60,78,5)}),
+deer:T('M14,44C22,38 50,38 68,38L80,30L88,14L92,8L98,10L106,18L108,24L102,26L96,24L92,32L88,50C90,56 90,60 88,64L92,110L86,110L82,80L80,68C70,66 58,66 48,66L52,84L54,110L46,110L42,88L38,70C24,64 12,56 14,44Z M14,42L16,50L10,50L6,38Z',108,110,p=>{Q(p,92,9,88,1,2.5);Q(p,92,9,98,1,2.5);Q(p,90,5,84,6,2);Q(p,44,70,40,108,5);Q(p,76,70,74,108,5)}),
+hippo:T('M10,30C16,14 50,10 76,14L86,14C92,10 100,10 106,14L118,22L120,36L116,46L100,48L92,46L88,52L88,70L70,70L68,56C56,60 44,60 34,58L34,70L16,70L14,54C8,48 6,38 10,30Z M96,12L98,4L104,12Z',120,70,p=>{Q(p,10,32,4,38,2);Q(p,60,58,62,70,14)}),
+rhino:T('M10,36C16,24 40,22 60,24L76,22C84,22 90,28 96,34L108,42L112,50L104,54L94,52L88,56L86,80L70,80L68,62C58,64 44,64 36,62L36,80L18,80L16,60C8,54 6,44 10,36Z M106,40L112,20L116,42Z M96,36L98,26L102,38Z M84,22L82,14L90,20Z',118,80),
+moto:F(160,92,p=>{RG(p,28,68,22,7);RG(p,132,68,22,7);p.addPath(new Path2D('M50,38L84,34L88,40L54,46Z M84,32L108,30L112,40L86,44Z M60,46L100,46L104,64L62,64Z'));E(p,128,34,5,7);Q(p,132,68,122,30,4);Q(p,118,30,110,24,4);Q(p,28,68,66,60,5);Q(p,70,64,20,56,5)})
+});
+/* batch 8: ikan, hiu, paus, lumba-lumba, truk, helikopter */
+Object.assign(TPL,{
+fish:T('M2,44C20,30 50,14 90,14L104,6L118,14C130,14 150,22 162,36L198,14L186,44L198,76L162,52C148,62 130,68 116,68L108,80L100,68C60,68 26,60 2,44Z M60,52L84,54L76,70Z',200,82,p=>circ(p,28,38,3.5,1)),
+shark:T('M2,44C30,36 70,28 104,22L116,4L128,22C150,26 172,32 186,38L198,6L188,42L196,66L170,52C140,54 118,56 108,58L86,78L84,62C50,60 20,52 2,44Z M146,54L152,54L138,62Z',200,80,p=>circ(p,30,42,2.5,1)),
+whale:T('M2,40C30,30 80,24 130,28C160,30 176,34 184,38L198,22L190,42L198,62L184,46C170,50 150,54 130,56C110,60 80,62 60,62C30,60 8,52 2,40Z M136,28L142,22L150,30Z M70,58L92,60L86,74Z',200,74),
+dolphin:T('M2,36L22,32C30,18 60,8 100,10C130,12 150,22 172,30L198,14L188,34L198,54L172,38C150,44 120,50 90,50C60,52 40,48 28,42L2,38Z M92,10L108,0L116,12Z M60,48L82,50L76,62Z',200,62),
+truck:F(200,64,p=>{p.rect(2,2,126,44);p.rect(126,30,8,16);p.addPath(new Path2D('M132,14L168,14L196,34L198,48L132,48Z'));p.rect(0,46,200,6);HL(p,140,18,22,14);[36,100,170].forEach(x=>circ(p,x,50,12))}),
+heli:F(200,80,p=>{E(p,70,52,50,22);EH(p,46,50,22,11);p.addPath(new Path2D('M112,44L190,40L196,46L190,52L112,58Z M180,40L190,14L198,14L196,44Z'));Q(p,10,12,150,12,3.5);Q(p,80,30,80,12,5);Q(p,30,78,110,78,3);Q(p,50,68,48,78,3);Q(p,90,68,92,78,3)})
+});
+MAPS.unshift([/Hiu/,'shark'],[/Ikan Paus|Humpback|Blue Whale|^Paus (?!Orca)/,'whale'],[/Pari/,'manta']);
+const SH=(n,b)=>{
+ if(b[0]=='='){const[k,d]=b.slice(1).split(':');return[k,0,d||'w']}
+ if(/Kartu Remi/.test(b))return['card',0,'h'];
+ if(/Domino/.test(b))return['domino',0,'w'];
+ if(/^(Dadu|Kubus)$/.test(b))return['dice',0,'w'];
+ if(b=='Koin')return['coin',0,'w'];
+ if(b=='Botol')return['bottle',0,'h'];
+ if(b=='Kaleng')return['r',.54,'h'];
+ if(/^Bola|^Lingkaran|^Cakram|^Cincin|Sferis/.test(b))return['c',1,'w'];
+ if(/Setengah Bola|Kubah/.test(b))return['e',1.6,'w'];
+ if(/Tall|A-Shape/.test(b))return['r',.45,'h'];
+ if(/Silinder Tinggi|Kerucut|Leher|Piston/.test(b))return['r',.4,'h'];
+ if(/^Silinder|Tabung/.test(b))return['r',.65,'h'];
+ if(/^(Batang|Pita|Kabel|Dua Batang|Gulungan Tali|Hexagonal)/.test(b))return['stick',12,'w'];
+ if(/Oval/.test(b))return['e',1.4,'w'];
+ if(/^Persegi( Pipih| Kepingan| Bingkai)?$|Kubus/.test(b))return['r',1,'w'];
+ return['r',1.5,'w']};
+DB.trim().split('\n').forEach(l=>{const[n,m,cat,b,lk]=l.split('|'),[t,ar,d]=SH(n,b),it=D(n,b,+m*100,d,t,ar||undefined);it.cat=cat;if(lk)it.lock=1;OBJ.push(it)});
+const POOL=OBJ.map(mk);POOL.forEach(o=>o.cat=o.cat||'Klasik');const CATS=[...new Set(POOL.map(o=>o.cat))];
+/* calm cutting-mat backdrop */
+function drawMat(){
+ const c=$('mat'),g=c.getContext('2d'),d=devicePixelRatio||1,W=innerWidth,H=innerHeight;
+ c.width=W*d;c.height=H*d;g.setTransform(d,0,0,d,0,0);g.fillStyle='#0f3b2e';g.fillRect(0,0,W,H);
+ const u=W<700?26:40,ln=(a,b,x,y,al)=>{g.strokeStyle=`rgba(234,243,228,${al})`;g.lineWidth=1;g.beginPath();g.moveTo(a,b);g.lineTo(x,y);g.stroke()};
+ for(let i=0;i*u<=W;i++)ln(i*u+.5,0,i*u+.5,H,i%5?.04:.09);
+ for(let j=0;j*u<=H;j++)ln(0,j*u+.5,W,j*u+.5,j%5?.04:.09);
+ g.setLineDash([5,7]);g.font='12px sans-serif';g.textAlign='center';
+ [45,60,75,105,120].forEach(a=>{const r=a*Math.PI/180,L=Math.hypot(W,H);ln(W/2,H,W/2+Math.cos(r)*L,H-Math.sin(r)*L,.08);g.fillStyle='rgba(234,243,228,.28)';g.fillText(a+'°',W/2+Math.cos(r)*u*15,H-Math.sin(r)*u*15)});
+ g.setLineDash([]);g.fillStyle='rgba(234,243,228,.3)';g.font='11px sans-serif';
+ for(let i=5;i*u<W;i+=5)g.fillText(i,i*u,12);
+ const inch=u*2.54;for(let i=0;i*inch<W;i++){ln(i*inch+.5,H,i*inch+.5,H-10,.3);if(i)g.fillText(i+'"',i*inch+10,H-3)}
+ g.textAlign='left';g.fillText('SELF-HEALING CUTTING MAT · A3 · 30 × 45 cm     1 in = 2.54 cm · 1 ft = 30.48 cm',8,H-18);
+ const v=g.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,Math.hypot(W,H)/2);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=v;g.fillRect(0,0,W,H);
+}
+addEventListener('resize',drawMat);drawMat();
+/* sound */
+let ac,mg,sg,mute=false,mOn=true,mt=0,mb=0,mtm,nb;
+try{const q=JSON.parse(localStorage.getItem('scalemat_set')||'{}');mute=!!q.m;mOn=q.mu!==false}catch(e){}
+const sv=()=>{try{localStorage.setItem('scalemat_set',JSON.stringify({m:mute,mu:mOn}))}catch(e){}};
+function A(){if(!ac){ac=new AudioContext();sg=ac.createGain();mg=ac.createGain();mg.gain.value=mOn?.5:0;sg.connect(ac.destination);mg.connect(ac.destination);nb=ac.createBuffer(1,4410,44100);nb.getChannelData(0).forEach((_,i,d)=>d[i]=Math.random()*2-1)}if(ac.state=='suspended')ac.resume();return ac}
+const snd=(fs,d=.11,type='triangle',v=.09)=>{if(mute)return;try{A();fs.forEach((f,i)=>{const t=ac.currentTime+i*d,os=ac.createOscillator(),g=ac.createGain();os.type=type;os.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d*1.8);os.connect(g);g.connect(sg);os.start(t);os.stop(t+d*2)})}catch(e){}};
+/* music: procedural lo-fi loop (C - Am - F - G) */
+const CH=[[0,4,7],[-3,0,4],[-7,-3,0],[-5,-1,2]],mf=n=>261.63*Math.pow(2,n/12);
+function note(f,t,d,ty,v){const o=ac.createOscillator(),g=ac.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(mg);o.start(t);o.stop(t+d+.05)}
+function hat(t){const n=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();n.buffer=nb;f.type='highpass';f.frequency.value=7000;g.gain.setValueAtTime(.025,t);g.gain.exponentialRampToValueAtTime(.0001,t+.05);n.connect(f);f.connect(g);g.connect(mg);n.start(t)}
+function sched(){if(!ac||ac.state!='running')return;while(mt<ac.currentTime+.35){const p=mb%8,ch=CH[(mb>>3)&3],b=.2;
+ if(p==0){ch.forEach(n=>note(mf(n),mt,b*7.5,'sine',.045));note(mf(ch[0]-24),mt,b*3,'triangle',.18)}
+ if(p==4)note(mf(ch[0]-24),mt,b*3,'triangle',.14);
+ if(p%2&&Math.random()<.6)hat(mt);
+ if(Math.random()<.55)note(mf(ch[Math.random()*3|0]+(Math.random()<.5?12:24)),mt,b*(Math.random()<.3?3:1.6),'square',.028);
+ mt+=b;mb++}}
+function musicOn(){if(!mOn||mtm)return;try{A();mt=ac.currentTime+.1;mtm=setInterval(sched,80)}catch(e){}}
+function duck(){if(mg&&mOn){const t=ac.currentTime;mg.gain.cancelScheduledValues(t);mg.gain.setValueAtTime(.12,t);mg.gain.linearRampToValueAtTime(.5,t+1.4)}}
+const ui=()=>{$('snd').textContent=mute?'🔇':'🔊';$('mus').textContent=mOn?'🎵':'🚫';$('mus').style.opacity=mOn?1:.5};
+$('snd').onclick=()=>{mute=!mute;ui();sv()};
+$('mus').onclick=()=>{mOn=!mOn;if(mOn){if(mg)mg.gain.setTargetAtTime(.5,ac.currentTime,.1);musicOn()}else if(mg)mg.gain.setTargetAtTime(0,ac.currentTime,.1);ui();sv()};
+document.addEventListener('visibilitychange',()=>{if(!ac)return;document.hidden?ac.suspend():ac.resume()});
+addEventListener('pointerdown',musicOn,{once:true});ui();
+/* state */
+const cv=$('cv'),ctx=cv.getContext('2d');
+let W=600,H=400,gy=340,ox=30,s=10,sT=10,dpr=1,o=null,idx=0,guess=30,rev=false,score=0,best=0,order=[],res=[],drag=false,px=0,py=0,off={x:0,y:0},P=[],rings=[],dirty=2,seen=[],cat='*';
+try{best=+localStorage.getItem('scalemat_best'+N)||0}catch(e){}
+$('bs').textContent=best;
+const txp=()=>ox+o.ref.w*s+2,kOf=L=>L/(o.dim=='w'?o.bw:o.bh);
+function fit(L){const k=kOf(L),wc=o.ref.w*1.1+o.bw*k,hc=Math.max(o.ref.h,o.bh*k);return clamp(Math.min((W-ox-48)/wc,(gy-90)/hc),1e-30,1e8)}
+function prog(){$('prog').innerHTML=Array.from({length:N},(_,i)=>`<div class="${res[i]?res[i].t:i==idx?'on':''}"></div>`).join('')}
+function setup(){
+ o=POOL[order[idx]];o.ref=o.ref0||pickRef(o);guess=o.ref.h*3;rev=false;$('res').hidden=true;$('lock').textContent='Lock In';$('lock').disabled=false;
+ $('rd').textContent=(idx+1)+' / '+N;
+ $('rn').textContent=o.ref.n;$('rs').textContent='Referensi · '+cmf(o.ref.w)+' × '+cmf(o.ref.h);
+ $('tn').textContent=o.n;$('ts').textContent=o.sub+' · drag to adjust the '+(o.dim=='w'?'length':'height');
+ prog();sT=s=fit(guess);dirty=2;
+}
+function pickOrder(){const sh=a=>{for(let i=a.length;i>1;){const j=Math.random()*i--|0;[a[i],a[j]]=[a[j],a[i]]}return a},all=POOL.map((_,i)=>i),inC=sh(all.filter(i=>cat=='*'||POOL[i].cat==cat)).sort((a,b)=>seen.includes(a)-seen.includes(b)),out=inC.concat(sh(all.filter(i=>!inC.includes(i)))).slice(0,N);seen=seen.concat(out).slice(-Math.floor(POOL.length/2));return out}
+function newGame(){order=pickOrder();idx=0;score=0;res=[];$('sc').textContent=0;$('ov').hidden=true;try{best=+localStorage.getItem('scalemat_best'+N)||0}catch(e){}$('bs').textContent=best;setup()}
+function resize(){const r=cv.getBoundingClientRect();dpr=devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;gy=H*.82;ox=Math.max(26,W*.04);if(o)sT=s=fit(rev?Math.max(guess,o.L):guess);dirty=2}
+new ResizeObserver(resize).observe($('stage'));
+const hpos=()=>{const k=kOf(guess);return{x:txp()+o.bw*k*s,y:gy-o.bh*k*s}};
+/* particles */
+function burst(x,y,n,cols,sp=9,up=6,g=.25){for(let i=0;i<n;i++){const a=Math.random()*TAU,v=Math.random()*sp;P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-up,g,r:Math.random()*TAU,vr:(Math.random()-.5)*.4,s:5+Math.random()*7,c:cols[i%cols.length],l:1,d:.006+Math.random()*.008,sh:Math.random()<.6})}}
+function fx(){
+ P=P.filter(p=>p.l>0&&p.y<H+20);
+ P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;if(p.fl)p.vx+=Math.sin(p.y*.04+p.fl)*.12;p.vx*=.99;p.r+=p.vr;p.l-=p.d;ctx.save();ctx.globalAlpha=clamp(p.l*2,0,1);ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;
+  if(p.sh)ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);else{ctx.beginPath();ctx.arc(0,0,p.s/2.5,0,TAU);ctx.fill()}ctx.restore()});
+ rings=rings.filter(r=>r.l>0);rings.forEach(r=>{r.r+=9;r.l-=.03;ctx.strokeStyle=r.c;ctx.globalAlpha=Math.max(r.l,0);ctx.lineWidth=6*r.l+1;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,TAU);ctx.stroke();ctx.globalAlpha=1})
+}
+/* drawing */
+function draw(){
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+ const raw=30/s,pw=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,5,10].map(m=>m*pw).find(v=>v>=raw),skip=st*s<56?2:1;
+ ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.textAlign='center';
+ const gg=ctx.createLinearGradient(0,gy,0,H);gg.addColorStop(0,'rgba(0,0,0,.28)');gg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gg;ctx.fillRect(0,gy,W,H-gy);
+ ctx.strokeStyle='rgba(234,243,228,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();
+ if(!o){fx();return}
+ const R=o.ref,X0=txp(),RR=X0,RL=RR-R.w*s,tick=(X,v,i,c)=>{ctx.strokeStyle='rgba(234,243,228,.06)';ctx.beginPath();ctx.moveTo(X,0);ctx.lineTo(X,gy);ctx.stroke();ctx.strokeStyle=c;ctx.beginPath();ctx.moveTo(X,gy);ctx.lineTo(X,gy+6);ctx.stroke();if(i%skip==0&&!(i==0&&c.includes('127'))){ctx.fillStyle=c;ctx.fillText(cmf(v),X,gy+17)}};
+ for(let i=0,x=0;X0+x*s<W;i++,x+=st)tick(X0+x*s+.5,x,i,'rgba(255,170,110,.75)');
+ for(let i=0,x=0;RR-x*s>=RL-2;i++,x+=st)tick(RR-x*s+.5,x,i,'rgba(127,209,255,.8)');
+ ctx.strokeStyle='rgba(255,210,63,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X0+.5,0);ctx.lineTo(X0+.5,gy);ctx.stroke();
+ctx.font='10px sans-serif';ctx.textAlign='right';ctx.lineWidth=1;
+ const LF=X0>70,LX=LF?X0-12:X0+12;ctx.textAlign=LF?'right':'left';ctx.lineJoin='round';
+ for(let i=1,y=st;gy-y*s>10;i++,y+=st){const Y=gy-y*s+.5;ctx.strokeStyle='rgba(234,243,228,.07)';ctx.beginPath();ctx.moveTo(0,Y);ctx.lineTo(W,Y);ctx.stroke();ctx.strokeStyle='rgba(234,243,228,.55)';ctx.beginPath();ctx.moveTo(X0-9,Y);ctx.lineTo(X0+9,Y);ctx.stroke();if(i%skip==0){ctx.lineWidth=3;ctx.strokeStyle='rgba(4,20,16,.85)';ctx.strokeText(cmf(y),LX,Y+3);ctx.lineWidth=1;ctx.fillStyle='rgba(255,236,170,.95)';ctx.fillText(cmf(y),LX,Y+3)}}
+ const b0=TPL[R.t](),rp=new Path2D();rp.addPath(b0[0],new DOMMatrix().translate(RL,gy-R.h*s).scale(R.w*s/b0[1],R.h*s/b0[2]));
+ ctx.save();ctx.shadowColor='rgba(127,209,255,.45)';ctx.shadowBlur=16;ctx.fillStyle='#8fd6ff';ctx.fill(rp,'evenodd');ctx.restore();
+ ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(127,209,255,.5)';ctx.lineWidth=1.2;const ty=gy-R.h*s;
+ ctx.beginPath();ctx.moveTo(RL,ty);ctx.lineTo(W,ty);ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='rgba(127,209,255,.9)';ctx.font='600 11px sans-serif';ctx.textAlign='right';ctx.fillText(R.n+' ◂',RR-5,gy+34);ctx.textAlign='left';
+ const tx=txp(),k=kOf(guess),path=o.P||(o.P=o.path());
+ const paint=(kk,glow,stroke)=>{ctx.save();ctx.translate(tx,gy-o.bh*kk*s);ctx.scale(kk*s,kk*s);
+  const f=ctx.createLinearGradient(0,0,0,o.bh);if(glow){f.addColorStop(0,rev?'rgba(255,138,76,.8)':'#ff9a55');f.addColorStop(1,rev?'rgba(255,75,43,.8)':'#ff4b2b');ctx.shadowColor='rgba(255,90,40,.5)';ctx.shadowBlur=18}else{f.addColorStop(0,'rgba(255,225,80,.55)');f.addColorStop(1,'rgba(255,190,40,.55)')}
+  ctx.fillStyle=f;ctx.fill(path);if(stroke){ctx.shadowBlur=0;ctx.lineWidth=2.2/(kk*s);ctx.strokeStyle='#ffe14d';ctx.stroke(path)}ctx.restore()};
+ paint(k,1);if(rev)paint(kOf(o.L),0,1);
+ ctx.fillStyle='rgba(255,154,100,.95)';ctx.font='600 11px sans-serif';ctx.fillText('▸ '+o.n+' · '+cmf(guess),tx+5,gy+34);
+ if(!rev){const h=hpos(),hx=clamp(h.x,20,W-20),hy=clamp(h.y,20,H-20);
+  ctx.fillStyle='rgba(6,26,20,.9)';ctx.strokeStyle='#ffd23f';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(hx-16,hy-16,32,32,10);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#ffd23f';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(hx-6,hy+6);ctx.lineTo(hx+6,hy-6);ctx.moveTo(hx+1,hy-6);ctx.lineTo(hx+6,hy-6);ctx.lineTo(hx+6,hy-1);ctx.moveTo(hx-1,hy+6);ctx.lineTo(hx-6,hy+6);ctx.lineTo(hx-6,hy+1);ctx.stroke()}
+ fx();
+}
+function tick(){
+ if(drag&&o&&!rev){const hx=px-off.x,hy=py-off.y;guess=clamp(o.dim=='w'?(hx-txp())/s:(gy-hy)/s,o.L*1e-4,o.L*1e4);if((o.dim=='w'&&px>W-56)||(o.dim=='h'&&py<70))sT=Math.max(1e-30,sT*.985)}
+ const mv=Math.abs(sT/s-1)>2e-4;if(mv||drag||P.length||rings.length||dirty>0){if(mv)s*=Math.pow(sT/s,.18);else s=sT;if(dirty>0)dirty--;draw()}requestAnimationFrame(tick)
+}
+/* input */
+const pos=e=>{const r=cv.getBoundingClientRect();px=e.clientX-r.left;py=e.clientY-r.top};
+cv.addEventListener('pointerdown',e=>{if(rev||!o||!$('ov').hidden)return;pos(e);const h=hpos(),k=kOf(guess),tx=txp();
+ if(Math.hypot(px-h.x,py-h.y)<30||(px>=tx-6&&px<=tx+o.bw*k*s+6&&py>=h.y-6&&py<=gy+6)){drag=true;off={x:px-h.x,y:py-h.y};cv.setPointerCapture(e.pointerId)}});
+cv.addEventListener('pointermove',pos);
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>drag=false));
+cv.addEventListener('wheel',e=>{e.preventDefault();sT=clamp(sT*Math.exp(-e.deltaY*.0015),1e-30,1e8)},{passive:false});
+$('zi').onclick=()=>sT=clamp(sT*1.3,1e-30,1e8);$('zo').onclick=()=>sT=clamp(sT/1.3,1e-30,1e8);
+/* result + effects */
+const TIER=[[97,'PERFECT!','g'],[90,'AMAZING!','g'],[80,'GREAT!','g'],[60,'NOT BAD','y'],[35,'FAR OFF','r'],[0,'WAY OFF!','r']];
+function play(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+function count(el,to){const t0=performance.now(),f=t=>{const p=Math.min((t-t0)/800,1);el.textContent=(to*(1-Math.pow(1-p,3))).toFixed(1);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+const CC=['#ffd23f','#3ddc84','#ff5fa2','#7fd1ff','#ff6a2b','#b388ff','#fff'];
+function conf(acc){const n=acc>=97?260:acc>=90?180:110,rain=k=>{for(let i=0;i<k;i++)P.push({x:Math.random()*W,y:-12-Math.random()*60,vx:(Math.random()-.5)*3,vy:1.5+Math.random()*3,g:.04,r:Math.random()*TAU,vr:(Math.random()-.5)*.35,s:7+Math.random()*9,c:CC[i%CC.length],l:2,d:.003,sh:Math.random()<.75,fl:Math.random()*6})};
+ const cn=(x,a)=>{for(let i=0;i<70;i++){const an=a+(Math.random()-.5)*.9,v=10+Math.random()*12;P.push({x,y:H*.95,vx:Math.cos(an)*v,vy:-Math.sin(an)*v,g:.3,r:Math.random()*TAU,vr:(Math.random()-.5)*.4,s:6+Math.random()*8,c:CC[i%CC.length],l:2,d:.004,sh:true,fl:Math.random()*6})}};
+ cn(W*.04,1.15);cn(W*.96,Math.PI-1.15);for(let b=0;b<6;b++)setTimeout(()=>rain(n/6|0),b*220);setTimeout(()=>{cn(W*.04,1.0);cn(W*.96,Math.PI-1.0)},450)}
+const fxs=c=>{const e=$('stage');e.classList.remove('fxg','fxy','fxr');void e.offsetWidth;e.classList.add(c)};
+function reveal(){
+ rev=true;drag=false;dirty=2;duck();const acc=Math.min(guess,o.L)/Math.max(guess,o.L)*100,pts=Math.round(acc),[,word,t]=TIER.find(x=>acc>=x[0]);
+ score+=pts;res.push({n:o.n,acc,t});$('sc').textContent=score;play($('scp'),'bump');prog();
+ const r=$('res');r.className='res '+t;r.innerHTML=`<div class="w">${word}</div><div class="s"><b id="ac">0.0</b>% · +${pts}</div><div class="k"><i style="background:#ff8a4c"></i>You ${fmt(guess)}<i style="background:#ffd23f"></i>Actual ${fmt(o.L)}</div>`;r.hidden=false;count($('ac'),acc);
+ $('ts').textContent=o.sub+' · actual size '+fmt(o.L);
+ sT=fit(Math.max(guess,o.L));
+ try{navigator.vibrate(t=='r'?[60,40,60]:25)}catch(e){}const fl=$('fl');fl.className='flash';void fl.offsetWidth;fl.className='flash '+(t=='r'?'r':t=='y'?'y':'g');
+ const C=['#ffd23f','#3ddc84','#ff6a2b','#7fd1ff','#ff5fa2','#fff'];
+ if(t=='g'){fxs('fxg');conf(acc);for(let i=0;i<(acc>=97?4:2);i++)setTimeout(()=>rings.push({x:W/2,y:H*.5,r:10,l:1,c:i%2?'#3ddc84':'#ffd23f'}),i*130);snd(acc>=97?[523,659,784,1047,1319]:[523,659,784,1047]);
+  if(acc>=90){burst(W*.12,H*.9,90,C,11,13);burst(W*.88,H*.9,90,C,11,13);setTimeout(()=>burst(W/2,H*.5,acc>=97?140:70,C,12,5),260)}else burst(W/2,H*.55,80,C,10,7);
+  if(acc>=97)for(let i=0;i<3;i++)setTimeout(()=>rings.push({x:W/2,y:H*.5,r:10,l:1,c:'#ffd23f'}),i*160)}
+ else if(t=='y'){fxs('fxy');rings.push({x:W/2,y:H*.5,r:10,l:1,c:'#ffd23f'});snd([440,554,494]);burst(W/2,H*.55,36,['#ffd23f','#ffe98a','#fff'],7,4)}
+ else{snd([220,175,131],.16,'sawtooth',.07);fxs('fxr');snd([90,70],.3,'sawtooth',.12);rings.push({x:W/2,y:H*.5,r:10,l:1,c:'#ff4d5a'});setTimeout(()=>burst(W*.5,H*.3,40,['#ff4d5a','#5b6b63'],5,-2,.4),200);burst(W/2,H*.5,50,['#ff4d5a','#8a2b34','#5b6b63','#ff8a4c'],6,2,.35)}
+ $('lock').textContent=idx==N-1?'See Results':'Next Round';
+}
+function finish(){
+ const avg=score/N,stars=avg>=95?5:avg>=85?4:avg>=70?3:avg>=50?2:avg>=25?1:0,nb=score>best;
+ if(nb){best=score;try{localStorage.setItem('scalemat_best'+N,best)}catch(e){}}
+ $('bs').textContent=best;$('res').hidden=true;$('lock').disabled=true;
+ $('ov').innerHTML=`<div class="card"><div class="st">${[0,1,2,3,4].map(i=>`<i class="${i<stars?'':'off'}" style="animation-delay:${i*.25}s">★</i>`).join('')}</div><h2>${score} / ${N*100}</h2><p>${nb&&score>0?'New best score!':'Best: '+best} · avg accuracy ${avg.toFixed(0)}%</p><ul>${res.map(r=>`<li><span>${r.n}</span><b style="color:var(--${r.t=='g'?'gd':r.t=='y'?'ye':'rd'})">${r.acc.toFixed(0)}%</b></li>`).join('')}</ul><button class="btn" id="again">Play Again</button></div>`;
+ $('ov').hidden=false;$('again').onclick=newGame;
+ if(stars>=3){snd([523,659,784,1047,784,1047,1319].concat(stars>=5?[1568,2093]:[]));if(stars>=5)for(let i=0;i<4;i++)setTimeout(()=>{burst(W*Math.random(),H*.4,90,['#ffd23f','#fff','#ff5fa2','#7fd1ff'],12,6);rings.push({x:W/2,y:H*.4,r:10,l:1,c:'#ffd23f'})},i*300);burst(W*.15,H*.9,100,['#ffd23f','#3ddc84','#ff6a2b','#7fd1ff'],11,13);burst(W*.85,H*.9,100,['#ffd23f','#3ddc84','#ff6a2b','#7fd1ff'],11,13)}
+}
+$('lock').onclick=()=>{if(!o||!$('ov').hidden)return;if(!rev)reveal();else if(idx>=N-1)finish();else{idx++;setup()}};
+addEventListener('keydown',e=>{if(!o||rev||!$('ov').hidden)return;const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();guess=clamp(guess*(1+d*(e.shiftKey?.15:.03)),o.L*1e-4,o.L*1e4);dirty=2}});
+addEventListener('keydown',e=>{if(e.key=='Enter'&&document.activeElement.tagName!='BUTTON')$('lock').click()});
+/* start screen */
+function start(){
+ $('ov').innerHTML=`<div class="card"><h2>Scale Mat</h2><p>Compare the silhouette with the reference object, then drag it to its real-world size.</p><ul><li><span>Drag the ↗ handle</span><b>resize</b></li><li><span>+ / − or scroll</span><b>zoom</b></li><li><span>${POOL.length} objects</span><b>100 pts each</b></li></ul><p style="margin:0 0 8px">Rounds</p><div class="seg" id="seg">${[5,10,20].map(n=>`<button data-n="${n}" class="${n==N?'on':''}">${n}</button>`).join('')}</div><p style="margin:0 0 8px">Category</p><select id="cat" aria-label="Category"><option value="*">All categories</option>${CATS.map(c=>`<option ${c==cat?'selected':''}>${c}</option>`).join('')}</select><button class="btn" id="go">Start Game</button></div>`;
+ $('ov').hidden=false;$('lock').disabled=true;$('seg').onclick=e=>{const n=+e.target.dataset.n;if(n){N=n;[...$('seg').children].forEach(b=>b.classList.toggle('on',b==e.target))}};$('go').onclick=()=>{cat=$('cat').value;musicOn();snd([392,523]);newGame()};
+ order=POOL.map((_,i)=>i);idx=0;setup();$('lock').disabled=true;
+}
+start();resize();requestAnimationFrame(tick);
+</script>
+</body>
+</html>
